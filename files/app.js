@@ -1,4 +1,4 @@
-/* ═══════════════════════════════════════════════════════════
+﻿/* ═══════════════════════════════════════════════════════════
    ALE AUTO CRED — app.js
    Painel de instrumentos: simulador, ponteiro em mola, pista em
    canvas, rastreamento com consentimento. Sem dependência externa.
@@ -23,8 +23,12 @@ const CONFIG = {
     { dias: [6], abre: "09:00", fecha: "12:00" },
   ],
 
-  /* Mensagem que abre no WhatsApp. {valor} e {prazo} vêm do simulador. */
-  mensagemWhats: "Olá! Vim pelo site. Quero simular um refinanciamento de {valor} em {prazo}x.",
+  /* Mensagem que abre no WhatsApp, por produto da página (<body data-produto>).
+     {valor}, {entrada}, {financiado} e {prazo} vêm do simulador. */
+  mensagemWhats: {
+    refinanciamento: "Olá! Vim pelo site. Quero simular um refinanciamento de {valor} em {prazo}x.",
+    financiamento: "Olá! Vim pelo site. Quero simular o financiamento de um veículo de {valor}, com entrada de {entrada} ({financiado} financiados) em {prazo}x.",
+  },
   /* Botões com data-mensagem usam estas, sem valor e prazo do simulador. */
   mensagensProduto: {
     financiamento: "Olá! Vim pelo site. Quero saber como funciona o financiamento de veículo.",
@@ -44,6 +48,32 @@ const CONFIG = {
     prazos: [12, 24, 36, 48, 60],        // mais de cinco quebra em duas linhas; nunca espremer
     prazoInicial: 48,
     taxaMes: 1.79,                       // TROCAR: % ao mês. Placeholder até o cliente passar a taxa real.
+
+    /* Financiamento (financiamento.html): aqui o slider principal é o valor do
+       VEÍCULO, não o que entra na conta. A entrada sai dele e o que financia —
+       e gera a parcela — é a diferença. Mesma taxa e mesmos prazos. */
+    financiamento: {
+      min: 10000,
+      max: 150000,
+      passo: 1000,
+      inicial: 50000,
+      entradaMinPct: 20,                 // CONFIRMAR com as parceiras: mínimo que costumam exigir
+      entradaInicialPct: 20,
+      entradaMaxPct: 80,                 // acima disso não é mais financiamento, é compra à vista
+    },
+  },
+
+  /* Busca do veículo na tabela FIPE. API pública e não oficial: se ela cair,
+     estiver lenta ou o visitante estiver sem rede, o campo se esconde sozinho
+     e o simulador volta ao slider de valor manual. Nada aqui é obrigatório
+     para o simulador funcionar. */
+  fipe: {
+    ativo: true,
+    base: "https://parallelum.com.br/fipe/api/v1",
+    timeoutMs: 9000,
+    /* O valor FIPE é referência de mercado, não o que a instituição libera.
+       Este texto aparece junto do valor e não deve sair. */
+    ressalva: "Valor de referência da tabela FIPE. O quanto a instituição financia depende da análise e da avaliação do veículo.",
   },
 
   rastreio: {
@@ -206,7 +236,28 @@ function cookies() {
 /* ─────────────────────────────────────────────────────────────
    5. SIMULADOR — estado, Price, links de WhatsApp
    ───────────────────────────────────────────────────────────── */
-const sim = { valor: CONFIG.simulador.inicial, prazo: CONFIG.simulador.prazoInicial, parcela: 0 };
+/* Qual produto esta p\u00e1gina simula. Sem <body data-produto>, \u00e9 refinanciamento \u2014
+   \u00e9 o que o index e a home sempre simularam. */
+function produtoDaPagina() {
+  const p = document.body && document.body.dataset.produto;
+  return p === "financiamento" ? "financiamento" : "refinanciamento";
+}
+
+/* A faixa do slider principal muda de significado por produto: no
+   refinanciamento \u00e9 quanto entra na conta, no financiamento \u00e9 o valor do
+   ve\u00edculo. Cluster e simulador leem daqui para n\u00e3o divergirem. */
+function faixaSimulador() {
+  const cfg = CONFIG.simulador;
+  return produtoDaPagina() === "financiamento" ? cfg.financiamento : cfg;
+}
+
+const sim = {
+  valor: faixaSimulador().inicial,
+  prazo: CONFIG.simulador.prazoInicial,
+  parcela: 0,
+  entrada: 0,          // sempre 0 no refinanciamento
+  financiado: 0,       // = valor - entrada; \u00e9 sobre ele que a parcela \u00e9 calculada
+};
 
 function parcelaPrice(pv, taxaMes, n) {
   const i = taxaMes / 100;
@@ -215,8 +266,12 @@ function parcelaPrice(pv, taxaMes, n) {
 }
 
 function atualizarLinks() {
-  const valor = moedaInteira.format(sim.valor).replace(/\u00a0/g, " ");
-  const padrao = CONFIG.mensagemWhats.replace("{valor}", valor).replace("{prazo}", sim.prazo);
+  const fmt = (v) => moedaInteira.format(v).replace(/\u00a0/g, " ");
+  const padrao = CONFIG.mensagemWhats[produtoDaPagina()]
+    .replace("{valor}", fmt(sim.valor))
+    .replace("{entrada}", fmt(sim.entrada))
+    .replace("{financiado}", fmt(sim.financiado))
+    .replace("{prazo}", sim.prazo);
   document.querySelectorAll("[data-zap]").forEach((a) => {
     const texto = CONFIG.mensagensProduto[a.dataset.mensagem] || padrao;
     a.href = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(texto)}`;
@@ -233,13 +288,41 @@ function leads() {
 
 function simulador(painel) {
   const cfg = CONFIG.simulador;
+  const fx = faixaSimulador();
   const faixa = document.getElementById("valor");
   const prazos = document.getElementById("prazos");
   if (!faixa || !prazos) return;
 
-  faixa.min = cfg.min; faixa.max = cfg.max; faixa.step = cfg.passo; faixa.value = cfg.inicial;
-  document.getElementById("limMin").textContent = moedaInteira.format(cfg.min);
-  document.getElementById("limMax").textContent = moedaInteira.format(cfg.max);
+  faixa.min = fx.min; faixa.max = fx.max; faixa.step = fx.passo; faixa.value = fx.inicial;
+  document.getElementById("limMin").textContent = moedaInteira.format(fx.min);
+  document.getElementById("limMax").textContent = moedaInteira.format(fx.max);
+
+  /* Segundo slider, só no financiamento: a entrada. Sem ele, entrada = 0 e
+     tudo abaixo se comporta exatamente como o simulador de sempre. */
+  const faixaEnt = document.getElementById("entrada");
+  const elEntOut = document.getElementById("entradaOut");
+  const elFinanciado = document.getElementById("financiado");
+  const elEntPct = document.getElementById("entradaPct");
+
+  function limitesEntrada() {
+    return {
+      min: Math.round((sim.valor * fx.entradaMinPct) / 100),
+      max: Math.round((sim.valor * fx.entradaMaxPct) / 100),
+    };
+  }
+
+  /* A entrada é uma fatia do valor do veículo, então os limites dela andam
+     junto com o slider de cima. Guardamos a proporção para o valor não pular
+     quando o veículo muda. */
+  function ajustarEntrada(manterPct) {
+    if (!faixaEnt) { sim.entrada = 0; return; }
+    const { min, max } = limitesEntrada();
+    const alvo = manterPct == null ? sim.entrada : Math.round((sim.valor * manterPct) / 100);
+    sim.entrada = Math.min(max, Math.max(min, Math.round(alvo / fx.passo) * fx.passo));
+    faixaEnt.min = min; faixaEnt.max = max; faixaEnt.step = fx.passo; faixaEnt.value = sim.entrada;
+    document.getElementById("entMin").textContent = moedaInteira.format(min);
+    document.getElementById("entMax").textContent = moedaInteira.format(max);
+  }
 
   const elParcela = document.getElementById("parcela");
   const elSub = document.getElementById("parcelaSub");
@@ -247,14 +330,27 @@ function simulador(painel) {
   const taxaTexto = cfg.taxaMes.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   function render() {
-    const parcela = parcelaPrice(sim.valor, cfg.taxaMes, sim.prazo);
+    sim.financiado = sim.valor - sim.entrada;
+    const parcela = parcelaPrice(sim.financiado, cfg.taxaMes, sim.prazo);
     sim.parcela = Math.round(parcela * 100) / 100;
     elParcela.textContent = moeda.format(parcela);
     elSub.textContent = `taxa ${taxaTexto}% a.m. · total ${moeda.format(parcela * sim.prazo)} · ${sim.prazo}x`;
     elOut.textContent = moedaInteira.format(sim.valor);
     faixa.setAttribute("aria-valuetext", valorExtenso(sim.valor));
-    faixa.style.setProperty("--pct", `${((sim.valor - cfg.min) / (cfg.max - cfg.min)) * 100}%`);
+    faixa.style.setProperty("--pct", `${((sim.valor - fx.min) / (fx.max - fx.min)) * 100}%`);
+
+    if (faixaEnt) {
+      const { min, max } = limitesEntrada();
+      elEntOut.textContent = moedaInteira.format(sim.entrada);
+      faixaEnt.setAttribute("aria-valuetext", valorExtenso(sim.entrada));
+      faixaEnt.style.setProperty("--pct", `${max > min ? ((sim.entrada - min) / (max - min)) * 100 : 0}%`);
+      if (elEntPct) elEntPct.textContent = `${Math.round((sim.entrada / sim.valor) * 100)}% do veículo`;
+      if (elFinanciado) elFinanciado.textContent = moedaInteira.format(sim.financiado);
+    }
+
     document.querySelectorAll('[data-sim="valor"]').forEach((e) => { e.textContent = moedaInteira.format(sim.valor); });
+    document.querySelectorAll('[data-sim="entrada"]').forEach((e) => { e.textContent = moedaInteira.format(sim.entrada); });
+    document.querySelectorAll('[data-sim="financiado"]').forEach((e) => { e.textContent = moedaInteira.format(sim.financiado); });
     document.querySelectorAll('[data-sim="prazo"]').forEach((e) => { e.textContent = `${sim.prazo}x`; });
     document.querySelectorAll('[data-sim="parcela"]').forEach((e) => { e.textContent = moeda.format(parcela); });
     tabela();
@@ -277,7 +373,7 @@ function simulador(painel) {
     }
     [...corpoTabela.children].forEach((tr) => {
       const p = Number(tr.dataset.prazo);
-      const parc = parcelaPrice(sim.valor, cfg.taxaMes, p);
+      const parc = parcelaPrice(sim.financiado, cfg.taxaMes, p);
       tr.classList.toggle("ativo", p === sim.prazo);
       tr.querySelector(".linha-bt").setAttribute("aria-pressed", String(p === sim.prazo));
       tr.querySelector(".prazo-n").textContent = `${p}x`;
@@ -324,13 +420,234 @@ function simulador(painel) {
 
   let esperaValor = 0;
   faixa.addEventListener("input", () => {
+    const pctAtual = faixaEnt ? (sim.entrada / sim.valor) * 100 : null;
     sim.valor = Number(faixa.value);
+    ajustarEntrada(pctAtual);   // mexer no veículo mantém a proporção da entrada
     render();
     clearTimeout(esperaValor);
     esperaValor = setTimeout(() => evento("simulador_valor", { valor: sim.valor, prazo: sim.prazo }), 500);
   });
 
+  if (faixaEnt) {
+    let esperaEnt = 0;
+    faixaEnt.addEventListener("input", () => {
+      sim.entrada = Number(faixaEnt.value);
+      render();
+      clearTimeout(esperaEnt);
+      esperaEnt = setTimeout(() => evento("simulador_entrada", { entrada: sim.entrada, valor: sim.valor }), 500);
+    });
+    ajustarEntrada(fx.entradaInicialPct);
+  }
+
   render();
+
+  /* A busca FIPE entra por aqui: define o valor do veículo de fora, mantendo
+     a proporção da entrada e o slider em sincronia. */
+  return {
+    definirValor(v) {
+      const pctAtual = faixaEnt ? (sim.entrada / sim.valor) * 100 : null;
+      sim.valor = Math.max(fx.min, Math.round(v));
+      faixa.value = Math.min(fx.max, sim.valor);   // o slider tem teto; sim.valor não
+      ajustarEntrada(pctAtual);
+      render();
+    },
+  };
+}
+
+/* ─────────────────────────────────────────────────────────────
+   5b. BUSCA DO VEÍCULO NA FIPE
+   A API é hierárquica (marca → modelo → ano), então a caixa de busca
+   caminha em cascata: filtra marcas, depois modelos daquela marca, e
+   por fim o ano. Qualquer falha esconde o bloco e devolve o slider.
+   ───────────────────────────────────────────────────────────── */
+
+/* A categoria vem do nome do modelo — é o que decide a silhueta mostrada.
+   Ordem importa: picape antes de SUV, porque "S10 CD" casa com os dois. */
+const CATEGORIAS = [
+  ["picape", /(STRADA|SAVEIRO|TORO|HILUX|S10|S-10|RANGER|MONTANA|FRONTIER|AMAROK|L200|OROCH|COURIER|HOGGAR|PICK.?UP|CABINE|\bC[SD]\b)/],
+  ["suv", /(CRETA|KICKS|COMPASS|RENEGADE|TRACKER|T.?CROSS|NIVUS|HR.?V|WR.?V|TIGGO|PULSE|FASTBACK|DUSTER|ECOSPORT|CAPTUR|CROSS|SW4|TUCSON|SANTA FE|PAJERO|TR4|OUTLANDER|ASX|CR.?V|RAV4|SORENTO|SPORTAGE|TERRITORY|COMMANDER|BRONCO|TROLLER|JIMNY|SUV|4X4)/],
+  ["sedan", /(SEDAN|SED[ÃA]|VIRTUS|VOYAGE|PRISMA|COROLLA|CIVIC|CITY|HB20S|LOGAN|VERSA|CRONOS|SIENA|CLASSIC|JETTA|SENTRA|CERATO|ELANTRA|LINEA|FLUENCE|CRUZE|COBALT|ONIX PLUS)/],
+];
+
+function categoriaVeiculo(nome, tipo) {
+  if (tipo === "motos") return "moto";
+  const n = (nome || "").toUpperCase();
+  for (const [cat, re] of CATEGORIAS) if (re.test(n)) return cat;
+  return "hatch";
+}
+
+function buscaFipe(painel) {
+  const bloco = document.getElementById("buscaBloco");
+  const campo = document.getElementById("veiculo");
+  if (!bloco || !campo || !CONFIG.fipe.ativo || !painel) return;
+
+  const lista = document.getElementById("veiculoLista");
+  const manual = document.getElementById("valorManual");
+  const achado = document.getElementById("veiculoAchado");
+  const dica = document.getElementById("veiculoDica");
+  const cache = new Map();
+  let etapa = "marca", marca = null, modelo = null, itens = [], indice = -1, pedido = 0;
+
+  async function api(caminho) {
+    if (cache.has(caminho)) return cache.get(caminho);
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), CONFIG.fipe.timeoutMs);
+    try {
+      const r = await fetch(`${CONFIG.fipe.base}${caminho}`, { signal: ctrl.signal });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const dados = await r.json();
+      cache.set(caminho, dados);
+      return dados;
+    } finally { clearTimeout(t); }
+  }
+
+  /* Sem a API não há busca: o slider de sempre volta e ninguém fica travado. */
+  function desistir() {
+    bloco.hidden = true;
+    if (manual) manual.hidden = false;
+  }
+
+  function fecharLista() {
+    lista.hidden = true;
+    campo.setAttribute("aria-expanded", "false");
+    indice = -1;
+  }
+
+  function pintarLista(opcoes, vazio) {
+    itens = opcoes;
+    lista.innerHTML = "";
+    if (!opcoes.length) {
+      const li = document.createElement("li");
+      li.className = "busca-vazio";
+      li.textContent = vazio;
+      lista.appendChild(li);
+    } else {
+      opcoes.slice(0, 40).forEach((o, i) => {
+        const li = document.createElement("li");
+        li.setAttribute("role", "option");
+        li.id = `op${i}`;
+        li.setAttribute("aria-selected", "false");
+        li.textContent = o.rotulo;
+        li.addEventListener("mousedown", (e) => { e.preventDefault(); escolher(i); });
+        lista.appendChild(li);
+      });
+    }
+    lista.hidden = false;
+    campo.setAttribute("aria-expanded", "true");
+    indice = -1;
+  }
+
+  function marcarAtivo() {
+    [...lista.querySelectorAll('[role="option"]')].forEach((li, i) => {
+      const on = i === indice;
+      li.setAttribute("aria-selected", String(on));
+      li.classList.toggle("on", on);
+      if (on) li.scrollIntoView({ block: "nearest" });
+    });
+    campo.setAttribute("aria-activedescendant", indice >= 0 ? `op${indice}` : "");
+  }
+
+  const semAcento = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase();
+  const filtrar = (arr, txt) => {
+    const q = semAcento(txt).trim();
+    if (!q) return arr;
+    return arr.filter((o) => semAcento(o.rotulo).includes(q));
+  };
+
+  async function sugerir() {
+    const meu = ++pedido;
+    const txt = campo.value;
+    try {
+      if (etapa === "marca") {
+        const marcas = await api("/carros/marcas");
+        if (meu !== pedido) return;
+        pintarLista(filtrar(marcas.map((m) => ({ rotulo: m.nome, codigo: m.codigo })), txt),
+          "Nenhuma marca com esse nome");
+      } else if (etapa === "modelo") {
+        const r = await api(`/carros/marcas/${marca.codigo}/modelos`);
+        if (meu !== pedido) return;
+        const resto = txt.slice(marca.rotulo.length);
+        pintarLista(filtrar(r.modelos.map((m) => ({ rotulo: m.nome, codigo: m.codigo })), resto),
+          "Nenhum modelo dessa marca com esse nome");
+      }
+    } catch { desistir(); }
+  }
+
+  async function escolher(i) {
+    const o = itens[i];
+    if (!o) return;
+    try {
+      if (etapa === "marca") {
+        marca = o;
+        etapa = "modelo";
+        campo.value = `${o.rotulo} `;
+        dica.textContent = "Agora o modelo.";
+        await sugerir();
+        campo.focus();
+      } else if (etapa === "modelo") {
+        modelo = o;
+        etapa = "ano";
+        campo.value = `${marca.rotulo} ${o.rotulo}`;
+        const anos = await api(`/carros/marcas/${marca.codigo}/modelos/${o.codigo}/anos`);
+        dica.textContent = "Qual o ano?";
+        pintarLista(anos.map((a) => ({ rotulo: a.nome, codigo: a.codigo })), "Sem anos para este modelo");
+      } else if (etapa === "ano") {
+        fecharLista();
+        campo.value = `${marca.rotulo} ${modelo.rotulo}`;
+        const v = await api(`/carros/marcas/${marca.codigo}/modelos/${modelo.codigo}/anos/${o.codigo}`);
+        aplicar(v);
+        evento("fipe_veiculo", { modelo: v.Modelo, ano: v.AnoModelo, valor: v.Valor });
+      }
+    } catch { desistir(); }
+  }
+
+  function aplicar(v) {
+    const num = Number(String(v.Valor).replace(/[^\d,]/g, "").replace(",", "."));
+    if (!Number.isFinite(num) || num <= 0) { desistir(); return; }
+
+    document.getElementById("veiculoNome").textContent = `${v.Marca} ${v.Modelo}`;
+    document.getElementById("veiculoValor").textContent = moedaInteira.format(num);
+    document.getElementById("veiculoMeta").textContent =
+      `${v.AnoModelo} · ${v.Combustivel} · FIPE ${v.MesReferencia} · cód. ${v.CodigoFipe}`;
+    document.getElementById("veiculoArte")
+      .setAttribute("href", `#sil-${categoriaVeiculo(v.Modelo, "carros")}`);
+
+    achado.hidden = false;
+    dica.textContent = "";
+    painel.definirValor(num);
+  }
+
+  function recomeçar() {
+    etapa = "marca"; marca = null; modelo = null;
+    campo.value = "";
+    achado.hidden = true;
+    dica.textContent = "Comece pela marca.";
+    fecharLista();
+    campo.focus();
+  }
+
+  campo.addEventListener("input", () => {
+    /* Apagar o nome da marca volta um passo — o campo é um caminho, não texto solto. */
+    if (etapa === "modelo" && !campo.value.startsWith(marca.rotulo)) { etapa = "marca"; marca = null; }
+    if (etapa === "ano") { etapa = "modelo"; achado.hidden = true; }
+    sugerir();
+  });
+  campo.addEventListener("focus", () => { if (achado.hidden) sugerir(); });
+  campo.addEventListener("blur", () => setTimeout(fecharLista, 120));
+  campo.addEventListener("keydown", (e) => {
+    const n = lista.querySelectorAll('[role="option"]').length;
+    if (e.key === "ArrowDown" && n) { e.preventDefault(); indice = (indice + 1) % n; marcarAtivo(); }
+    else if (e.key === "ArrowUp" && n) { e.preventDefault(); indice = (indice - 1 + n) % n; marcarAtivo(); }
+    else if (e.key === "Enter" && indice >= 0) { e.preventDefault(); escolher(indice); }
+    else if (e.key === "Escape") fecharLista();
+  });
+  const trocar = document.getElementById("trocarVeiculo");
+  if (trocar) trocar.addEventListener("click", recomeçar);
+
+  /* Só mostra a busca depois que a API provar que responde. */
+  api("/carros/marcas")
+    .then(() => { bloco.hidden = false; if (manual) manual.hidden = true; })
+    .catch(desistir);
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -340,7 +657,7 @@ function cluster() {
   const svg = document.querySelector(".gauge");
   if (!svg) return { apontar() {}, ignicao() {}, angulo: 0, parado: true };
 
-  const cfg = CONFIG.simulador;
+  const cfg = faixaSimulador();
   const CX = 160, CY = 140, R = 110, ANG_MIN = -120, ANG_MAX = 120;
   const NS = "http://www.w3.org/2000/svg";
   const ponto = (ang, r) => { const a = (ang * Math.PI) / 180; return [CX + r * Math.sin(a), CY - r * Math.cos(a)]; };
@@ -560,7 +877,22 @@ function acenderHero() {
   });
 }
 
-const PERGUNTAS = [
+const PERGUNTAS_FINANCIAMENTO = [
+  ["Qual entrada eu preciso dar?",
+   "Costuma partir de 20% do valor do veículo, mas quem define é a instituição financeira, conforme o seu perfil e o carro escolhido. Quanto maior a entrada, menor a parcela e maior a chance de aprovação."],
+  ["Dá para financiar carro de particular?",
+   "Sim. A instituição faz a vistoria e a avaliação do veículo do mesmo jeito, e nós cuidamos da papelada e da transferência. Só é preciso que o veículo esteja regular e o vendedor tenha o documento em ordem."],
+  ["Qual a idade máxima do veículo?",
+   "Varia conforme a instituição. Carros mais novos conseguem prazo maior e taxa menor. Traga o ano e o modelo que a gente verifica com as parceiras o que é possível."],
+  ["O carro já sai no meu nome?",
+   "Sim. O veículo é transferido para você com a garantia (alienação fiduciária) registrada no documento em favor da instituição. A garantia sai quando você termina de pagar."],
+  ["Vocês cobram alguma taxa antes?",
+   "Nenhuma. Simulação, análise e atendimento são sem custo, e não pedimos depósito, pix ou taxa de liberação em momento algum. Se alguém pedir dinheiro adiantado em nosso nome, é golpe — nos avise."],
+  ["Vocês são um banco?",
+   "Não. Somos correspondente bancário: intermediamos seu pedido junto a instituições financeiras parceiras, comparamos as condições e cuidamos da papelada. A concessão do crédito é decisão delas."],
+];
+
+const PERGUNTAS_REFINANCIAMENTO = [
   ["Consigo refinanciar estando negativado?",
    "Na maioria dos casos, sim. A garantia é o próprio veículo, então o nome sujo pesa muito menos do que em um empréstimo comum. Ainda assim existe análise, e quem decide é a instituição financeira — não prometemos aprovação antes de olhar seu caso."],
   ["Preciso entregar o carro?",
@@ -593,7 +925,8 @@ function faq() {
     requestAnimationFrame(() => { corpo.style.maxHeight = "0px"; });
   }
 
-  PERGUNTAS.forEach(([q, r], i) => {
+  const perguntas = produtoDaPagina() === "financiamento" ? PERGUNTAS_FINANCIAMENTO : PERGUNTAS_REFINANCIAMENTO;
+  perguntas.forEach(([q, r], i) => {
     const item = document.createElement("div");
     item.className = "faq-item";
     item.innerHTML = `
@@ -626,8 +959,8 @@ function faq() {
 }
 
 /* Passos: o trilho avança sozinho enquanto a seção está na tela.
-   Pausa com o mouse em cima, com foco ou depois de um clique; não roda
-   com prefers-reduced-motion. */
+   O mouse em cima não interrompe; pausa só com foco ou depois de um
+   clique. Não roda com prefers-reduced-motion. */
 function passos() {
   const lista = document.getElementById("passos");
   if (!lista) return;
@@ -678,8 +1011,6 @@ function passos() {
       evento("passos_navegar", { passo: i + 1 });
     });
   });
-  lista.addEventListener("pointerenter", () => { sobre = true; parar(); });
-  lista.addEventListener("pointerleave", () => { sobre = false; andar(); });
   lista.addEventListener("focusin", () => { sobre = true; parar(); });
   lista.addEventListener("focusout", (e) => { if (!lista.contains(e.relatedTarget)) { sobre = false; andar(); } });
   document.addEventListener("visibilitychange", () => { if (document.hidden) parar(); else andar(); });
@@ -696,6 +1027,7 @@ function preencherDados() {
   document.querySelectorAll("[data-horario]").forEach((e) => { e.textContent = CONFIG.horarioAtendimento; });
   const s = CONFIG.simulador;
   document.querySelectorAll('[data-cfg="faixa"]').forEach((e) => { e.textContent = `R$ ${rotuloMil(s.min)} a R$ ${rotuloMil(s.max)}`; });
+  document.querySelectorAll('[data-cfg="tetoCurto"]').forEach((e) => { e.textContent = `R$ ${rotuloMil(s.max)}`; });
   document.querySelectorAll('[data-cfg="prazo"]').forEach((e) => { e.textContent = `Até ${Math.max(...s.prazos)}x`; });
   const rota = document.getElementById("rota");
   if (rota) rota.href = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(CONFIG.endereco)}`;
@@ -810,7 +1142,8 @@ function rolagem() {
 document.addEventListener("DOMContentLoaded", () => {
   preencherDados();
   const painel = cluster();
-  simulador(painel);
+  const sistema = simulador(painel);
+  buscaFipe(sistema);
   atualizarLinks();
   leads();
   acenderHero();

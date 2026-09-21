@@ -1,4 +1,4 @@
-/* ═══════════════════════════════════════════════════════════
+﻿/* ═══════════════════════════════════════════════════════════
    ALE AUTO CRED — folha de estilo
    Conceito: painel de instrumentos × papel de contrato
    ═══════════════════════════════════════════════════════════ */
@@ -140,6 +140,26 @@ img,svg{display:block;max-width:100%}
 }
 .topo-link:hover{border-color:var(--acento)}
 
+/* Navegação principal — o item da página atual fica aceso e sublinhado. */
+.menu{display:flex;align-items:center;gap:4px}
+.menu a{
+  position:relative;display:inline-flex;align-items:center;min-height:44px;padding:0 14px;
+  color:var(--claro);opacity:.72;text-decoration:none;font-weight:500;font-size:.95rem;
+  border-radius:6px;transition:opacity .15s,color .15s;
+}
+.menu a:hover{opacity:1}
+.menu a::after{
+  content:"";position:absolute;left:14px;right:14px;bottom:8px;height:2px;border-radius:1px;
+  background:var(--acento);transform:scaleX(0);transform-origin:left;transition:transform .25s ease;
+}
+.menu a:hover::after{transform:scaleX(1)}
+.menu a[aria-current="page"]{opacity:1;color:var(--acento);font-weight:600}
+.menu a[aria-current="page"]::after{transform:scaleX(1);box-shadow:0 0 10px var(--acento)}
+/* Sobre papel (páginas sem hero escuro) o mesmo menu inverte o contraste. */
+.papel-sec .menu a{color:var(--tinta)}
+.papel-sec .menu a[aria-current="page"]{color:var(--acento-tinta)}
+.papel-sec .menu a::after{background:var(--acento-tinta)}
+
 .hero-grid{
   position:relative;z-index:5;flex:1;
   display:grid;grid-template-columns:minmax(0,1fr);
@@ -275,6 +295,71 @@ img,svg{display:block;max-width:100%}
 .pilula:hover{border-color:var(--acento-tinta)}
 .pilula[aria-checked="true"]{background:var(--acento);border-color:var(--acento);color:var(--tinta);font-weight:600}
 
+/* ── Busca do veículo na FIPE ────────────────────────────────── */
+.busca{position:relative}
+.busca-lupa{position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none}
+.busca-lupa svg{width:18px;height:18px;fill:none;stroke:var(--grafite-papel);stroke-width:2;stroke-linecap:round}
+#veiculo{
+  width:100%;min-height:52px;padding:0 14px 0 42px;
+  font:inherit;color:var(--tinta);background:var(--branco);
+  border:1px solid rgba(15,23,32,.22);border-radius:10px;
+  transition:border-color .15s,box-shadow .15s;
+}
+#veiculo::placeholder{color:var(--grafite-papel)}
+#veiculo:focus{border-color:var(--acento-tinta);box-shadow:0 0 0 3px rgba(0,106,168,.15);outline:none}
+.busca-lista{
+  position:absolute;z-index:20;left:0;right:0;top:calc(100% + 6px);
+  list-style:none;margin:0;padding:6px;max-height:262px;overflow-y:auto;
+  background:var(--branco);border:1px solid rgba(15,23,32,.14);border-radius:10px;
+  box-shadow:0 16px 40px rgba(15,23,32,.14);
+}
+.busca-lista li{padding:11px 12px;border-radius:7px;font-size:.95rem;cursor:pointer;line-height:1.35}
+.busca-lista li:hover,.busca-lista li.on{background:rgba(0,106,168,.1);color:var(--acento-tinta)}
+.busca-vazio{color:var(--grafite-papel);cursor:default!important}
+.busca-vazio:hover{background:none!important;color:var(--grafite-papel)!important}
+
+/* O veículo encontrado: silhueta + nome + FIPE */
+.veiculo-achado{
+  display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center;
+  margin:16px 0 0;padding:16px;border-radius:12px;
+  background:rgba(0,106,168,.07);box-shadow:inset 0 0 0 1px rgba(0,106,168,.16);
+}
+.veiculo-arte{width:104px;height:50px;flex:none}
+/* As silhuetas entram por <use>, que clona para um shadow tree: o seletor tem
+   de pegar os originais dentro do <defs>, não os descendentes de .veiculo-arte. */
+[id^="sil-"] .lataria{fill:var(--acento-tinta)}
+[id^="sil-"] .vidro{fill:var(--papel)}
+[id^="sil-"] .roda{fill:var(--tinta)}
+[id^="sil-"] .aro{fill:var(--papel)}
+[id^="sil-"] .risco{fill:none;stroke:var(--papel);stroke-width:1.1;stroke-linecap:round}
+[id^="sil-"] .quadro{fill:none;stroke:var(--acento-tinta);stroke-width:2.6;stroke-linecap:round}
+.veiculo-dados{min-width:0}
+.veiculo-nome{font-weight:600;line-height:1.3;font-size:.95rem}
+.veiculo-fipe{margin-top:4px;color:var(--grafite-papel);font-size:.9rem}
+.veiculo-fipe strong{
+  font-family:'Archivo',sans-serif;font-size:1.2rem;color:var(--acento-tinta);
+  font-variant-numeric:tabular-nums;margin-left:4px;
+}
+.link-trocar{
+  padding:0;margin-top:8px;min-height:44px;
+  color:var(--acento-tinta);font-weight:600;font-size:.9rem;text-decoration:underline;
+}
+.busca-bloco > .cond{margin-top:12px}
+
+/* Financiamento: a conta entre os dois sliders — veículo menos entrada. */
+.campo-nota{color:var(--grafite-papel);font-size:.8rem;font-weight:400;white-space:nowrap}
+/* Respiro entre um slider e o campo do seguinte. */
+.faixa-limites + .campo{margin-top:18px}
+.financia{
+  display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  margin:14px 0 2px;padding:12px 14px;border-radius:10px;
+  background:rgba(0,106,168,.07);box-shadow:inset 0 0 0 1px rgba(0,106,168,.16);
+}
+.financia span{font-size:.9rem;font-weight:500;color:var(--tinta)}
+.financia strong{
+  font-family:'Archivo',sans-serif;font-weight:700;font-size:1.25rem;color:var(--acento-tinta);
+  font-variant-numeric:tabular-nums;
+}
 .aviso{color:var(--grafite-papel);font-size:.8rem;line-height:1.5;margin:16px 0 18px}
 .cluster .btn-acento{width:100%}
 .cluster noscript p{color:var(--tinta);padding:12px 0}
@@ -356,7 +441,10 @@ img,svg{display:block;max-width:100%}
   display:grid;grid-template-columns:repeat(4,1fr);gap:0 32px;
 }
 .passo{position:relative;padding-top:64px}
-.passo::before,.passo::after{content:"";position:absolute;top:21px;left:56px;right:-32px;height:2px;border-radius:1px}
+/* O trilho vai de centro a centro dos números: a linha nasce por trás do
+   círculo (que é opaco e fica por cima), então carro e luz correm o mesmo
+   percurso e andam sempre colados. */
+.passo::before,.passo::after{content:"";position:absolute;top:21px;left:22px;right:-54px;height:2px;border-radius:1px}
 .passo::before{background:rgba(15,23,32,.14)}
 .passo::after{background:var(--acento-tinta);transform:scaleX(0);transform-origin:left;transition:transform .35s ease}
 .passo:last-child::before,.passo:last-child::after{display:none}
@@ -365,38 +453,123 @@ img,svg{display:block;max-width:100%}
 .passo h3{font-size:1.2rem;line-height:1.25}
 .passo-bt{display:block;text-align:left;width:100%;padding:0;font:inherit;color:var(--tinta);border-radius:8px}
 .passo-bt:hover .passo-titulo{color:var(--acento-tinta)}
+/* O carrinho corre no mesmo trilho e na mesma duração da luz. Cada número é
+   uma lombada: ele sobe, passa por cima e desce do outro lado — por isso
+   corre acima do número (z-index 3), em vez de sumir atrás dele. */
+.carro{
+  position:absolute;top:21px;left:22px;right:-54px;height:0;z-index:3;
+  pointer-events:none;opacity:0;
+  transform:translateX(0);
+  transition:transform .35s ease,opacity .18s ease;
+}
+.passo.ativo .carro{opacity:1}
+.passo:last-child .carro{display:none}
+/* Passo cumprido: o carro fica parado na chegada enquanto apaga. */
+.passo.feito .carro{transform:translateX(100%);transition:opacity .18s ease}
+.passos.andando .passo.ativo .carro{
+  transform:translateX(100%);
+  transition:transform var(--passo-dur) linear,opacity .18s ease;
+}
+.carro-corpo{
+  --base:translate(-50%,calc(-100% + 2.3px));  /* rodas no asfalto */
+  --alto:translateY(-11px);                    /* parado, fica no alto da lombada */
+  position:absolute;left:0;top:0;line-height:0;
+  transform:var(--base) var(--alto);
+  transform-origin:50% 94%;                    /* inclina pivotando nas rodas */
+  width:max-content;  /* o trilho em pé tem width:0; sem isto o svg colapsa */
+}
+/* Descer a lombada, cruzar o trecho plano e subir a próxima. */
+.passos.andando .passo.ativo .carro-corpo{animation:lombada var(--passo-dur) linear}
+/* A rampa segue um cosseno — altura e inclinação nascem e morrem em zero,
+   então não há canto na saída do plano nem no alto da lombada. */
+@keyframes lombada{
+  0%   {transform:var(--base) translateY(-11px)   rotate(0deg)}
+  2.1% {transform:var(--base) translateY(-10.4px) rotate(10.6deg)}
+  4.2% {transform:var(--base) translateY(-8.7px)  rotate(18.4deg)}
+  7%   {transform:var(--base) translateY(-5.5px)  rotate(22.4deg)}
+  9.8% {transform:var(--base) translateY(-2.3px)  rotate(18.4deg)}
+  11.9%{transform:var(--base) translateY(-.6px)   rotate(10.6deg)}
+  14%  {transform:var(--base) translateY(0)       rotate(0deg)}
+  86%  {transform:var(--base) translateY(0)       rotate(0deg)}
+  88.1%{transform:var(--base) translateY(-.6px)   rotate(-10.6deg)}
+  90.2%{transform:var(--base) translateY(-2.3px)  rotate(-18.4deg)}
+  93%  {transform:var(--base) translateY(-5.5px)  rotate(-22.4deg)}
+  95.8%{transform:var(--base) translateY(-8.7px)  rotate(-18.4deg)}
+  97.9%{transform:var(--base) translateY(-10.4px) rotate(-10.6deg)}
+  100% {transform:var(--base) translateY(-11px)   rotate(0deg)}
+}
+.carro svg{width:44px;height:21px;display:block;max-width:none}
+.carro .lataria{fill:var(--acento-tinta)}
+.carro .vidro{fill:var(--papel)}
+.carro .roda{fill:var(--tinta)}
+.carro .aro{fill:var(--papel)}
+.carro .risco{fill:none;stroke:var(--papel);stroke-width:1.1;stroke-linecap:round}
+/* Motor ligado: tranco no svg, para não disputar o transform com a lombada. */
+.passos.andando .passo.ativo .carro svg{animation:trepidar .32s ease-in-out infinite}
+@keyframes trepidar{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(1px)}
+}
 .passo .n{
-  position:absolute;left:0;top:0;width:44px;height:44px;border-radius:50%;
+  position:absolute;left:0;top:0;width:44px;height:44px;border-radius:50%;z-index:2;
   display:inline-flex;align-items:center;justify-content:center;
   font-family:'Archivo',sans-serif;font-weight:700;font-size:.9rem;letter-spacing:.06em;
   font-variant-numeric:tabular-nums;
-  border:1.5px solid rgba(15,23,32,.22);color:var(--grafite-papel);background:var(--papel);
-  transition:background .35s,color .35s,border-color .35s,box-shadow .35s,transform .35s;
+  border:1.5px solid rgba(15,23,32,.22);color:var(--grafite-papel);
+  /* O nível sobe por dentro do círculo: vazio embaixo, cheio em cima. */
+  background:linear-gradient(to top,var(--acento-tinta) var(--nivel),var(--papel) var(--nivel));
+  transition:--nivel .35s,color .35s,border-color .35s,box-shadow .35s;
 }
-.passo.feito .n{background:var(--acento-tinta);border-color:var(--acento-tinta);color:var(--branco)}
-.passo.ativo .n{
-  background:var(--acento);border-color:var(--acento);color:var(--tinta);
-  box-shadow:0 0 0 6px rgba(0,191,255,.22),0 0 22px rgba(0,191,255,.45);transform:scale(1.08);
+@property --nivel{syntax:"<percentage>";inherits:false;initial-value:0%}
+.passo.feito .n,.passo.ativo .n{--nivel:100%;border-color:var(--acento-tinta);color:var(--branco)}
+.passo.ativo .n{box-shadow:0 0 0 4px rgba(0,106,168,.14)}
+/* O número enche enquanto o carro sobe a lombada dele — os últimos 14% do
+   trecho anterior. Fica cheio no instante em que o carro alcança o topo. */
+.passos.andando .passo.ativo + .passo .n{
+  animation:encher calc(var(--passo-dur) * .14) linear calc(var(--passo-dur) * .86) both;
+}
+@keyframes encher{
+  /* O dígito troca de cor em corte seco quando o nível cruza o meio dele —
+     interpolar passaria por um cinza claro que some nos dois fundos. */
+  0%  {--nivel:0%;  color:var(--grafite-papel);border-color:rgba(15,23,32,.22)}
+  49% {color:var(--grafite-papel)}
+  50% {color:var(--branco)}
+  100%{--nivel:100%;color:var(--branco);border-color:var(--acento-tinta)}
 }
 /* Volta ao início: a luz do trilho recua de 04 a 01 num movimento só,
    e cada número apaga quando a luz passa por ele. */
 .passos.rebobinando .passo::after{animation:recolher-x .3s linear both;animation-delay:calc((2 - var(--i)) * 300ms)}
 @keyframes recolher-x{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 @keyframes recolher-y{from{transform:scaleY(1)}to{transform:scaleY(0)}}
-.passos.rebobinando .passo .n{animation:apagar .3s ease-out both;animation-delay:calc((3 - var(--i)) * 300ms)}
-.passos.rebobinando .passo:last-child .n{animation-name:apagar-ativo}
-@keyframes apagar{
-  from{background:var(--acento-tinta);border-color:var(--acento-tinta);color:var(--branco)}
-  to{background:var(--papel);border-color:rgba(15,23,32,.22);color:var(--grafite-papel)}
-}
-@keyframes apagar-ativo{
-  from{background:var(--acento);border-color:var(--acento);color:var(--tinta);transform:scale(1.08);box-shadow:0 0 0 6px rgba(0,191,255,.22),0 0 22px rgba(0,191,255,.45)}
-  to{background:var(--papel);border-color:rgba(15,23,32,.22);color:var(--grafite-papel);transform:scale(1);box-shadow:0 0 0 0 rgba(0,191,255,0)}
+.passos.rebobinando .passo .n{animation:esvaziar .3s ease-out both;animation-delay:calc((3 - var(--i)) * 300ms)}
+@keyframes esvaziar{
+  from{--nivel:100%;border-color:var(--acento-tinta);color:var(--branco);box-shadow:0 0 0 4px rgba(0,106,168,.14)}
+  to{--nivel:0%;border-color:rgba(15,23,32,.22);color:var(--grafite-papel);box-shadow:0 0 0 0 rgba(0,106,168,0)}
 }
 .passo-titulo{display:block;transition:color .3s}
 .passo > p{margin-top:10px;color:var(--grafite-papel);transition:color .35s}
 .passo.ativo > p{color:var(--tinta)}
 .passo > .cond{margin-top:8px}
+
+/* ─────────────────────────────────────────────────────────────
+   PÁGINAS DE PRODUTO (refinanciamento, financiamento)
+   Montadas com os mesmos componentes da home — hero, produto,
+   simulador, passos, docs, FAQ. A única peça nova é a variante
+   horizontal do card, para o produto aparecer sozinho e grande.
+   ───────────────────────────────────────────────────────────── */
+.produtos.solo{grid-template-columns:1fr}
+.produto.largo{flex-direction:row;align-items:stretch}
+.produto.largo .produto-foto{aspect-ratio:auto;width:44%;flex:none}
+.produto.largo .produto-corpo{padding:38px 40px 40px;justify-content:center}
+.produto.largo h3{font-size:1.6rem}
+.produto.largo .produto-corpo > p{max-width:46rem;font-size:1.05rem;line-height:1.6}
+.link-saiba{
+  display:inline-flex;align-items:center;gap:8px;min-height:44px;
+  color:var(--acento-tinta);font-weight:600;font-size:.95rem;text-decoration:none;
+}
+.link-saiba::after{content:"→";transition:transform .2s}
+.link-saiba:hover{text-decoration:underline}
+.link-saiba:hover::after{transform:translateX(3px)}
 
 /* Quem atende */
 .atendente{
@@ -570,7 +743,11 @@ footer .links a,footer .links button{color:var(--claro);text-decoration:underlin
   .doc:hover{transform:none}
   .passos.andando .passo.ativo::after{transition:none}
   .passos.rebobinando .passo::after,.passos.rebobinando .passo .n{animation:none}
-  .passo.ativo .n{transform:none}
+  .passos.andando .passo.ativo + .passo .n{animation:none}
+  .carro{transition:none}
+  .passos.andando .passo.ativo .carro{transition:none}
+  .passos.andando .passo.ativo .carro-corpo{animation:none}
+  .passos.andando .passo.ativo .carro svg{animation:none}
   .produto:hover,.produto:focus-within{transform:none}
   .produto:hover .produto-foto img,.produto:focus-within .produto-foto img{transform:none}
 }
@@ -580,13 +757,30 @@ footer .links a,footer .links button{color:var(--claro);text-decoration:underlin
    ───────────────────────────────────────────────────────────── */
 @media (max-width:1024px){
   .simular{grid-template-columns:minmax(0,1fr) minmax(320px,420px);gap:40px}
+  .produto.largo .produto-corpo{padding:30px 32px 32px}
+  .menu a{padding:0 10px}
+  .menu a::after{left:10px;right:10px}
   .passos{grid-template-columns:repeat(2,1fr);gap:36px 32px}
   .passo:nth-child(2)::before,.passo:nth-child(2)::after{display:none}
+  .passo:nth-child(2) .carro{display:none}
 }
 @media (max-width:900px){
   .hero{min-height:0}
   .hero-grid{padding:28px 0 56px}
   .ctas .btn-acento,.ctas .btn-linha{flex:1 1 100%}
+  /* O menu desce para uma linha própria e o botão do topo sai — o flutuante
+     de WhatsApp já cobre essa ação no mobile. */
+  .topo{padding:16px 0 10px}
+  .topo-in{flex-wrap:wrap;gap:4px 16px}
+  .topo-in .topo-link{display:none}
+  .menu{order:3;width:100%;margin-left:-14px;gap:0}
+  .menu a{font-size:.9rem;padding:0 14px}
+  .veiculo-achado{grid-template-columns:1fr;gap:10px;justify-items:start}
+  /* O card largo volta a empilhar, como os outros. */
+  .produto.largo{flex-direction:column}
+  .produto.largo .produto-foto{width:100%;aspect-ratio:16/9}
+  .produto.largo .produto-corpo{padding:28px 30px 30px}
+  .produto.largo h3{font-size:1.35rem}
   .veu{background:linear-gradient(180deg,var(--noite) 0%,rgba(12,16,24,.9) 40%,rgba(12,16,24,.75) 100%)}
   .simular{grid-template-columns:1fr;gap:28px}
   .prazos-quadro{padding:18px 16px 14px}
@@ -605,6 +799,16 @@ footer .links a,footer .links button{color:var(--claro);text-decoration:underlin
   .passos.rebobinando .passo::after{animation-name:recolher-y}
   .passo:nth-child(2)::before,.passo:nth-child(2)::after{display:block}
   .passo:last-child::before,.passo:last-child::after{display:none}
+  /* Trilho em pé: girar o carro 90° o torna ilegível neste tamanho, então ele
+     desce de perfil, atravessado no trilho, com a luz passando por trás. */
+  .carro{top:46px;bottom:2px;left:19px;right:auto;width:0;height:auto;transform:translateY(0)}
+  .passos.andando .passo.ativo .carro{transform:translateY(100%)}
+  .passo.feito .carro{transform:translateY(100%)}
+  /* Timeline em pé não é estrada: aqui não há lombada, o carro só desce. */
+  .carro-corpo{--base:translate(-3px,-50%);--alto:translateY(0)}
+  .passos.andando .passo.ativo .carro-corpo{animation:none}
+  .carro svg{width:40px;height:19.1px}
+  .passo:nth-child(2) .carro{display:block}
   .passo .n{width:40px;height:40px;font-size:.85rem}
   .passo-titulo{min-height:40px;display:flex;align-items:center}
   .passo h3{font-size:1.1rem}
