@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" role="img" aria-label="Estrada ao anoitecer com a silhueta da cidade ao fundo">
+  <defs>
+    <linearGradient id="ceu" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"    stop-color="#04101C"/>
+      <stop offset=".42"  stop-color="#0A2740"/>
+      <stop offset=".78"  stop-color="#124668"/>
+      <stop offset="1"    stop-color="#1C6796"/>
+    </linearGradient>
+    <radialGradient id="halo" cx=".5" cy="1" r=".95">
+      <stop offset="0"   stop-color="#7CC4FF" stop-opacity=".55"/>
+      <stop offset=".38" stop-color="#4FB0FF" stop-opacity=".18"/>
+      <stop offset="1"   stop-color="#4FB0FF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="chao" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"   stop-color="#0A2136"/>
+      <stop offset=".55" stop-color="#061423"/>
+      <stop offset="1"   stop-color="#030B14"/>
+    </linearGradient>
+    <linearGradient id="pista" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"   stop-color="#153A57"/>
+      <stop offset=".5"  stop-color="#0C2438"/>
+      <stop offset="1"   stop-color="#071624"/>
+    </linearGradient>
+    <linearGradient id="risco" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"   stop-color="#7CC4FF" stop-opacity=".25"/>
+      <stop offset="1"   stop-color="#BFE2FF" stop-opacity=".8"/>
+    </linearGradient>
+    <filter id="borrao" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="14"/>
+    </filter>
+    <filter id="borrao-leve" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="5"/>
+    </filter>
+  </defs>
+
+  <!-- céu -->
+  <rect width="1600" height="470" fill="url(#ceu)"/>
+  <!-- luz da cidade subindo do horizonte -->
+  <rect x="0" y="60" width="1600" height="410" fill="url(#halo)"/>
+
+  <!-- silhueta da cidade -->
+  <path fill="#061523" d="M0 470V415h60v-25h50v40h55v-58h35v28h55v-45h45v65h60v-22h50v-36h45v48h65v-25h40v-40h45v60h65v-25h50v38h60v-26h50v33h60v-50h45v33h65v-50h45v42h55v-18h60v38h55v-52h45v37h60v-17h60v40h60v-30h60v17h100v55z"/>
+  <!-- janelas acesas -->
+  <g fill="#7CC4FF" opacity=".5">
+    <rect x="72"  y="401" width="6" height="9"/><rect x="90" y="401" width="6" height="9"/>
+    <rect x="176" y="384" width="6" height="9"/><rect x="176" y="402" width="6" height="9"/>
+    <rect x="266" y="367" width="6" height="9"/><rect x="284" y="367" width="6" height="9"/>
+    <rect x="266" y="389" width="6" height="9"/>
+    <rect x="421" y="374" width="6" height="9"/><rect x="439" y="374" width="6" height="9"/>
+    <rect x="571" y="357" width="6" height="9"/><rect x="589" y="357" width="6" height="9"/>
+    <rect x="571" y="379" width="6" height="9"/>
+    <rect x="1011" y="370" width="6" height="9"/><rect x="1029" y="370" width="6" height="9"/>
+    <rect x="1226" y="380" width="6" height="9"/><rect x="1244" y="380" width="6" height="9"/>
+    <rect x="1226" y="402" width="6" height="9"/>
+    <rect x="1391" y="400" width="6" height="9"/><rect x="1409" y="400" width="6" height="9"/>
+  </g>
+
+  <!-- chão -->
+  <rect y="470" width="1600" height="430" fill="url(#chao)"/>
+
+  <!-- pista em perspectiva -->
+  <path fill="url(#pista)" d="M785 470h30l665 430H120z"/>
+  <!-- acostamentos iluminados -->
+  <path fill="none" stroke="#4FB0FF" stroke-opacity=".38" stroke-width="3" d="M785 470 120 900"/>
+  <path fill="none" stroke="#4FB0FF" stroke-opacity=".38" stroke-width="3" d="M815 470 1480 900"/>
+
+  <!-- faixa central, com perspectiva -->
+  <g fill="url(#risco)">
+    <polygon points="795,513 805,513 806.8,538.8 793.2,538.8"/>
+    <polygon points="790.2,581.8 809.8,581.8 812.2,616.2 787.8,616.2"/>
+    <polygon points="784.2,667.8 815.8,667.8 818.8,710.8 781.2,710.8"/>
+    <polygon points="776.7,775.3 823.3,775.3 826.9,826.9 773.1,826.9"/>
+    <polygon points="767.4,900 832.6,900 832.6,900 767.4,900"/>
+  </g>
+
+  <!-- rastros de faróis -->
+  <g filter="url(#borrao)">
+    <ellipse cx="640" cy="616" rx="230" ry="9"  fill="#BFE2FF" opacity=".22"/>
+    <ellipse cx="1010" cy="700" rx="300" ry="12" fill="#7CC4FF" opacity=".18"/>
+    <ellipse cx="500"  cy="812" rx="360" ry="14" fill="#4FB0FF" opacity=".12"/>
+  </g>
+  <g filter="url(#borrao-leve)">
+    <ellipse cx="796" cy="486" rx="26" ry="6" fill="#DCEEFF" opacity=".55"/>
+    <ellipse cx="812" cy="492" rx="34" ry="7" fill="#9BD0FF" opacity=".4"/>
+  </g>
+
+  <!-- névoa azul no horizonte -->
+  <rect x="0" y="430" width="1600" height="90" fill="#1C6796" opacity=".22" filter="url(#borrao)"/>
+</svg>

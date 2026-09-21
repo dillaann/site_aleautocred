@@ -1,0 +1,41 @@
+IMAGENS DESTE SITE
+==================
+
+hero.jpg
+  Título:   "Giving car keys"
+  Licença:  CC0 1.0 (domínio público) — uso comercial livre, sem exigência de crédito
+  Fonte:    rawpixel, via Openverse (openverse.org)
+  Uso:      fundo da seção hero, escurecido por CSS para o texto ler
+
+hero.svg
+  Arte vetorial criada para este site. Serve de reserva caso hero.jpg seja removido.
+
+produto-refinanciamento.webp
+  Título:   "Free man holding car key"
+  Licença:  CC0 1.0 (domínio público) — uso comercial livre, sem exigência de crédito
+  Fonte:    rawpixel, via Openverse — https://www.rawpixel.com/image/5927317/photo-image-public-domain-hand-person
+  Uso:      card "Refinanciamento de veículo", cores originais
+
+produto-financiamento.webp
+  Título:   "Free black car park street"
+  Licença:  CC0 1.0 (domínio público) — uso comercial livre, sem exigência de crédito
+  Fonte:    rawpixel, via Openverse — https://www.rawpixel.com/image/5918688/image-light-public-domain-logo
+  Uso:      card "Financiamento de veículo", cores originais
+
+favicon.svg
+  Glifo de manômetro criado para este site. Placeholder até o cliente enviar o logo.
+
+COMO TROCAR AS FOTOS DOS PRODUTOS
+---------------------------------
+Salve a nova foto com o mesmo nome (1024px de largura, proporção 3:2, WebP ou
+JPEG ajustando o src no index.html). As fotos aparecem nas cores originais.
+
+COMO TROCAR A FOTO DO HERO
+--------------------------
+Salve a nova imagem como img/hero.jpg (de preferência com pelo menos 1920px de
+largura, formato horizontal, com o assunto do lado direito — o texto fica à esquerda).
+Nada mais precisa ser alterado.
+
+Para desligar o tratamento azul e mostrar a foto nas cores originais, mude em
+estilo.css a variável:
+  --hero-filtro: none;
