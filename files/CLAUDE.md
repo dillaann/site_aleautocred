@@ -11,11 +11,20 @@ Site estático de correspondente bancário (refinanciamento e financiamento de v
 | `financiamento.html` | Guia do produto + simulador (busca FIPE + entrada + prazo) |
 | `politica-de-privacidade.html` | LGPD |
 
-**As páginas de produto são montadas com os componentes da home, não com componentes novos.** Hero com foto, `.produto` com imagem, `.simular`, `.passos` com o carrinho, `.docs`, `.faq-grid`, `.fim-sec`, rodapé — as mesmas peças, com conteúdo e ordem próprios. A única adição é `.produto.largo` (variante horizontal do card, para o produto aparecer sozinho e grande) dentro de `.produtos.solo`.
+**As páginas de produto são montadas com os componentes da home, não com componentes novos.** Hero com foto, `.produto` com imagem, `.simular`, `.passos` com o carrinho, `.docs`, `.fim-sec`, rodapé — as mesmas peças, com conteúdo e ordem próprios. O `.docs` tem variante própria de página de produto (ícone em cima e texto centralizado, `estilo.css:978`) e é o que monta a seção "Entenda". `.faq-grid` hoje só a home usa. A única adição é `.produto.largo` (variante horizontal do card, para o produto aparecer sozinho e grande) dentro de `.produtos.solo`.
 
 **Já tentamos o contrário e deu errado.** Uma versão anterior inventou uma linguagem só para essas páginas — faixas alternadas, barras de comparação, fichas de dados, cartões, sumário — e ficou genérica e feia. Se a página parecer pobre, o caminho é **usar melhor as peças existentes e o conteúdo**, não desenhar peça nova.
 
-Ordem das duas: `o-que-e > simular > como-funciona > documentos > perguntas > [o outro produto] > cta`. O bloco do outro produto no fim é o que liga refinanciamento e financiamento nos dois sentidos.
+Ordem das duas: `o-que-e > simular > como-funciona > entender > [o outro produto] > cta`. O bloco do outro produto no fim é o que liga refinanciamento e financiamento nos dois sentidos.
+
+**A página de produto é o lugar da explicação, e não pode repetir a home.** Em 22/09/2026 ela estava repetindo: "Documentos" do refinanciamento era cópia byte a byte da home, o FAQ da home já servia as perguntas de refinanciamento (a home não tem `data-produto`), e "Como funciona" tinha o mesmo rótulo, o mesmo título e os mesmos passos nas três páginas. O que ficou:
+
+- **Documentos e Perguntas saíram** das páginas de produto. O lugar delas é `index.html`; não recriar.
+- **"Como funciona" tem rótulo, título e passos próprios por página** — "Do primeiro contato ao dinheiro na conta" no refinanciamento, "Da escolha do carro à transferência" no financiamento. Se for mexer, mexa nas três separadamente; não unificar de novo.
+- **A seção "Entenda"** (`#entender`, componente `.docs`) é onde mora a explicação de mecânica do produto. O conteúdo dela saiu das respostas já revisadas em `PERGUNTAS_REFINANCIAMENTO` e `PERGUNTAS_FINANCIAMENTO`, no `app.js` — é de lá que deve sair qualquer item novo, para não inventar afirmação sobre crédito.
+- **O CTA final tem título próprio por página.** O do refinanciamento não pode voltar a ser o da home.
+
+`PERGUNTAS_FINANCIAMENTO` virou código morto quando o FAQ saiu das páginas de produto: nenhuma página tem `#faq` com `data-produto="financiamento"`. O array continua no `app.js` de propósito, como fonte do conteúdo da seção "Entenda".
 
 Quem decide o comportamento por página é o `<body data-produto="refinanciamento|financiamento">`: dele saem a faixa do slider, a mensagem do WhatsApp e o conjunto de perguntas do FAQ. Sem esse atributo, o padrão é refinanciamento. Toda função do `app.js` sai cedo se o elemento não existir na página — é o que permite montar página nova só com as seções que interessam.
 

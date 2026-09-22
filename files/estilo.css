@@ -730,6 +730,35 @@ body[data-produto="financiamento"]{--hero-img:url('img/hero-financiamento.jpg')}
 }
 .mapa::after{content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05),inset 0 0 80px rgba(12,16,24,.5)}
 
+/* A mesma seção sobre papel. Três caixas soltas sobre claro leem como campo
+   desabilitado, então aqui as informações se juntam num cartão branco só,
+   separadas por fio — a mesma construção de .docs-lista. O fio de cima
+   separa a seção do FAQ, que é papel igual; adjacência em CSS não resolve
+   porque a seção de avaliações fica entre as duas, mesmo escondida. */
+#onde-estamos{border-top:1px solid rgba(15,23,32,.09)}
+.papel-sec .cartao{
+  gap:0;background:var(--branco);
+  border:1px solid rgba(15,23,32,.1);border-radius:18px;overflow:hidden;
+  box-shadow:0 1px 2px rgba(15,23,32,.04);
+}
+.papel-sec .linha-info{
+  background:transparent;border:0;border-radius:0;padding:20px 24px;transform:none;
+}
+.papel-sec .linha-info + .linha-info{border-top:1px solid rgba(15,23,32,.09)}
+.papel-sec .linha-info:hover{background:rgba(0,106,168,.035);transform:none}
+.papel-sec .linha-info svg{
+  stroke:var(--acento-tinta);
+  background:linear-gradient(160deg,rgba(0,106,168,.14),rgba(0,106,168,.06));
+  box-shadow:inset 0 0 0 1px rgba(0,106,168,.14);
+}
+.papel-sec .status{background:rgba(15,23,32,.05);box-shadow:inset 0 0 0 1px rgba(15,23,32,.1)}
+.papel-sec .status-luz{background:var(--grafite-papel)}
+.papel-sec .status.aberto{color:var(--acento-tinta);background:rgba(0,106,168,.1);box-shadow:inset 0 0 0 1px rgba(0,106,168,.22)}
+.papel-sec .status.aberto .status-luz{background:var(--acento-tinta);box-shadow:0 0 10px rgba(0,106,168,.45)}
+.papel-sec .mapa{border-color:rgba(15,23,32,.1);background:var(--branco);box-shadow:0 26px 50px rgba(15,23,32,.14)}
+.papel-sec .mapa iframe{filter:none}
+.papel-sec .mapa::after{box-shadow:inset 0 0 0 1px rgba(15,23,32,.08)}
+
 /* CTA final */
 .fim-sec{background:radial-gradient(70% 90% at 50% 100%,rgba(0,191,255,.14),transparent 70%) var(--noite)}
 .fim{text-align:center;padding:110px 0;display:flex;flex-direction:column;align-items:center;gap:26px}
