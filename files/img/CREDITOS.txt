@@ -2,10 +2,28 @@ IMAGENS DESTE SITE
 ==================
 
 hero.jpg
-  Título:   "Giving car keys"
+  Título:   SUV cinza-escuro em pátio de terra (foto enviada pelo cliente)
+  Licença:  CONFIRMAR COM O CLIENTE. A foto foi entregue por ele em
+            21/09/2026 e tem cara de material de imprensa de montadora.
+            Se não for material próprio ou licenciado, não pode ir ao ar.
+  Fonte:    arquivo do cliente
+  Uso:      fundo do hero da home (index.html). Original de 1000x665,
+            reescalado para 1600px com lanczos e leve nitidez — o original
+            é menor que a tela, então não fica tão nítido quanto as fotos
+            de acervo. Se o cliente tiver o arquivo em resolução maior,
+            vale substituir.
+
+hero-refinanciamento.jpg
+  Título:   "Free man driving car image"
   Licença:  CC0 1.0 (domínio público) — uso comercial livre, sem exigência de crédito
   Fonte:    rawpixel, via Openverse (openverse.org)
-  Uso:      fundo da seção hero, escurecido por CSS para o texto ler
+  Uso:      fundo do hero de refinanciamento.html — o carro continua com o dono
+
+hero-financiamento.jpg
+  Título:   "Car headlight close photo"
+  Licença:  CC0 1.0 (domínio público) — uso comercial livre, sem exigência de crédito
+  Fonte:    rawpixel, via Openverse (openverse.org)
+  Uso:      fundo do hero de financiamento.html — carro à venda, pátio de loja
 
 hero.svg
   Arte vetorial criada para este site. Serve de reserva caso hero.jpg seja removido.
@@ -32,10 +50,15 @@ JPEG ajustando o src no index.html). As fotos aparecem nas cores originais.
 
 COMO TROCAR A FOTO DO HERO
 --------------------------
-Salve a nova imagem como img/hero.jpg (de preferência com pelo menos 1920px de
-largura, formato horizontal, com o assunto do lado direito — o texto fica à esquerda).
-Nada mais precisa ser alterado.
+Cada página tem a sua: a home usa img/hero.jpg, refinanciamento.html usa
+img/hero-refinanciamento.jpg e financiamento.html usa img/hero-financiamento.jpg
+(quem faz a troca é o data-produto do <body>, no estilo.css, logo abaixo de
+.hero-foto). Salve a nova imagem por cima do arquivo da página, em formato
+horizontal e com o assunto do lado direito — o texto fica à esquerda. Nada mais
+precisa ser alterado.
 
-Para desligar o tratamento azul e mostrar a foto nas cores originais, mude em
-estilo.css a variável:
-  --hero-filtro: none;
+O hero não tem mais tratamento azul: o véu é cinza neutro, o brilho azul
+(.luz) está desligado e o canvas de faróis (#pista) não é mais criado pelo
+app.js. As fotos aparecem na cor original, só escurecidas para o texto ler.
+Para reacender o azul, reative o bloco .luz no estilo.css e troque
+`const estrada = null` por `pista()` no app.js.

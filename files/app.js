@@ -29,8 +29,12 @@ const CONFIG = {
     refinanciamento: "Olá! Vim pelo site. Quero simular um refinanciamento de {valor} em {prazo}x.",
     financiamento: "Olá! Vim pelo site. Quero simular o financiamento de um veículo de {valor}, com entrada de {entrada} ({financiado} financiados) em {prazo}x.",
   },
-  /* Botões com data-mensagem usam estas, sem valor e prazo do simulador. */
+  /* Botões com data-mensagem usam estas, sem valor e prazo do simulador.
+     "inicio" é o padrão das páginas que não têm simulador (a home): sem ela o
+     link sairia com o valor inicial do CONFIG, como se o visitante tivesse
+     escolhido — e ele não escolheu. */
   mensagensProduto: {
+    inicio: "Olá! Vim pelo site. Quero simular e saber quanto consigo de crédito com meu veículo.",
     financiamento: "Olá! Vim pelo site. Quero saber como funciona o financiamento de veículo.",
     duvida: "Olá! Vim pelo site e tenho uma dúvida sobre refinanciamento de veículo.",
     visita: "Olá! Vim pelo site. Quero combinar uma visita à loja na Ponte do Imaruim.",
@@ -265,13 +269,22 @@ function parcelaPrice(pv, taxaMes, n) {
   return pv * i / (1 - Math.pow(1 + i, -n));
 }
 
+/* A página tem simulador? (a home não tem — o simulador vive nas duas
+   páginas de produto). Vários trechos mudam de comportamento por causa disso. */
+const temSimulador = () => !!document.getElementById("valor");
+
 function atualizarLinks() {
   const fmt = (v) => moedaInteira.format(v).replace(/\u00a0/g, " ");
-  const padrao = CONFIG.mensagemWhats[produtoDaPagina()]
-    .replace("{valor}", fmt(sim.valor))
-    .replace("{entrada}", fmt(sim.entrada))
-    .replace("{financiado}", fmt(sim.financiado))
-    .replace("{prazo}", sim.prazo);
+  /* Sem simulador na página (a home), os valores de sim são só o padrão do
+     CONFIG — mandá-los na mensagem seria inventar uma escolha que o visitante
+     não fez. */
+  const padrao = temSimulador()
+    ? CONFIG.mensagemWhats[produtoDaPagina()]
+        .replace("{valor}", fmt(sim.valor))
+        .replace("{entrada}", fmt(sim.entrada))
+        .replace("{financiado}", fmt(sim.financiado))
+        .replace("{prazo}", sim.prazo)
+    : CONFIG.mensagensProduto.inicio;
   document.querySelectorAll("[data-zap]").forEach((a) => {
     const texto = CONFIG.mensagensProduto[a.dataset.mensagem] || padrao;
     a.href = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(texto)}`;
@@ -281,7 +294,9 @@ function atualizarLinks() {
 function leads() {
   document.querySelectorAll("[data-zap]").forEach((a) => {
     a.addEventListener("click", () => evento("generate_lead", {
-      origem: a.dataset.origem || "site", valor: sim.valor, prazo: sim.prazo, parcela: sim.parcela,
+      origem: a.dataset.origem || "site",
+      /* Na home não há simulador: mandar o padrão sujaria o relatório. */
+      ...(temSimulador() ? { valor: sim.valor, prazo: sim.prazo, parcela: sim.parcela } : {}),
     }));
   });
 }
@@ -877,6 +892,69 @@ function acenderHero() {
   });
 }
 
+/* ─────────────────────────────────────────────────────────────
+   ENTRADAS AO ROLAR
+   Cada bloco aparece quando entra na tela, uma vez só. O CSS
+   (.entra / .dentro) só esconde o que esta função marcar — com
+   movimento reduzido, sem IntersectionObserver ou sem JS, nada é
+   marcado e a página aparece inteira.
+   Em grade de cartões a marcação desce um nível e os filhos
+   entram em escadinha; o resto entra como bloco. Ficam de fora o
+   que já tem animação própria (hero, ponteiro, trilho dos passos)
+   e o que não pode receber transform (.faq-ajuda é sticky).
+   ───────────────────────────────────────────────────────────── */
+function entradas() {
+  if (reduzirMovimento() || !("IntersectionObserver" in window)) return null;
+
+  const ESCADA = ".produtos,.docs,.avaliacoes,.faq,.simular-pontos";
+  const FORA = ".faq-ajuda,.cluster,.mapa";
+  const PASSO = 70;          // ms entre um filho e o seguinte
+  const TETO = 480;          // ninguém espera mais que isto
+
+  const alvos = [];
+  const marcar = (el, i) => {
+    if (!el || el.classList.contains("entra")) return;
+    el.classList.add("entra");
+    el.style.setProperty("--atraso", Math.min(i * PASSO, TETO) + "ms");
+    alvos.push(el);
+  };
+
+  /* Cada seção: os filhos diretos do .wrap entram em escadinha. Onde o
+     filho é uma grade de cartões, quem entra são os cartões. */
+  document.querySelectorAll(".sec > .wrap, .fim-sec > .wrap, footer .cols").forEach((wrap) => {
+    let i = 0;
+    Array.from(wrap.children).forEach((filho) => {
+      if (filho.matches(FORA)) return;
+      if (filho.matches(ESCADA)) {
+        Array.from(filho.children).forEach((neto) => marcar(neto, i++));
+      } else {
+        marcar(filho, i++);
+      }
+    });
+  });
+
+  /* Dentro das colunas de texto do simulador e do FAQ a escadinha recomeça,
+     senão o último item da coluna esperaria a coluna inteira. */
+  document.querySelectorAll(".simular-txt, .faq-intro, .local .cartao").forEach((col) => {
+    if (!col.closest(".sec")) return;
+    let i = 0;
+    Array.from(col.children).forEach((filho) => marcar(filho, i++));
+  });
+
+  const olho = new IntersectionObserver((entradas) => {
+    entradas.forEach((e) => {
+      if (!e.isIntersecting) return;
+      e.target.classList.add("dentro");
+      olho.unobserve(e.target);
+    });
+  }, { rootMargin: "0px 0px -8% 0px", threshold: 0.08 });
+
+  alvos.forEach((el) => olho.observe(el));
+
+  return { get marcados() { return alvos.length; } };
+}
+
+
 const PERGUNTAS_FINANCIAMENTO = [
   ["Qual entrada eu preciso dar?",
    "Costuma partir de 20% do valor do veículo, mas quem define é a instituição financeira, conforme o seu perfil e o carro escolhido. Quanto maior a entrada, menor a parcela e maior a chance de aprovação."],
@@ -1147,6 +1225,7 @@ document.addEventListener("DOMContentLoaded", () => {
   atualizarLinks();
   leads();
   acenderHero();
+  const reveladas = entradas();
   const instrumento = document.querySelector(".cluster");
   if (instrumento && "IntersectionObserver" in window) {
     const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { painel.ignicao(); io.disconnect(); } }, { threshold: 0.45 });
@@ -1154,7 +1233,10 @@ document.addEventListener("DOMContentLoaded", () => {
   } else {
     painel.ignicao();
   }
-  const estrada = pista();
+  /* O canvas de faróis azuis saiu do hero das três páginas a pedido: o fundo
+     do hero fica na cor da própria foto. A função pista() continua
+     no arquivo — para religar, troque por pista(). */
+  const estrada = null;
   faq();
   passos();
   local();
@@ -1170,5 +1252,6 @@ document.addEventListener("DOMContentLoaded", () => {
     get ponteiroParado() { return painel.parado; },
     get pistaAtiva() { return estrada ? estrada.ativo : false; },
     get consentido() { return rastreio.consentido; },
+    get blocosAnimados() { return reveladas ? reveladas.marcados : 0; },
   };
 });

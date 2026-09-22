@@ -52,7 +52,7 @@
       <p class="sub">Refinanciamento e financiamento de veículo com atendimento presencial em
         Palhoça. Sem cobrança antecipada, sem promessa vazia: a gente simula, você decide.</p>
       <div class="ctas">
-        <a class="btn-acento" href="#simular">Simular agora</a>
+        <a class="btn-acento" href="#produtos">Ver as opções</a>
         <a class="btn-linha" data-zap data-origem="hero" href="#" target="_blank" rel="noopener">Falar no WhatsApp</a>
       </div>
       <div class="confia">
@@ -65,89 +65,6 @@
 </section>
 
 <main>
-<!-- ═══════════════ SIMULADOR ═══════════════ -->
-<section class="papel-sec sec" id="simular">
-  <div class="wrap simular">
-    <div class="simular-txt">
-      <p class="rotulo-sec">Simulador</p>
-      <h2>Quanto o seu veículo libera?</h2>
-      <p class="lede">Escolha o valor que você precisa e em quantas vezes quer pagar. A parcela é uma
-        estimativa; a proposta com taxa e CET definitivos vem da instituição financeira, depois da análise.</p>
-
-      <div class="prazos-quadro">
-        <p class="prazos-quadro-titulo">Para <strong data-sim="valor">R$ 25.000</strong>, a parcela fica em:</p>
-        <table class="prazos-tabela">
-          <thead>
-            <tr><th scope="col">Prazo</th><th scope="col">Parcela</th><th scope="col">Total a pagar</th></tr>
-          </thead>
-          <tbody id="tabelaPrazos"></tbody>
-        </table>
-        <p class="fina">Toque num prazo para escolher. Estimativa pela tabela Price, sujeita a análise.</p>
-      </div>
-
-      <ul class="simular-pontos">
-        <li>
-          <span class="simular-icone" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 14l1.5-4.5A2 2 0 0 1 8.4 8h7.2a2 2 0 0 1 1.9 1.5L19 14"/><rect x="3" y="14" width="18" height="5" rx="1.5"/><circle cx="7" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/></svg></span>
-          <span><strong>O carro fica com você</strong><br>Continua usando normalmente; só a garantia entra no documento.</span>
-        </li>
-        <li>
-          <span class="simular-icone" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg></span>
-          <span><strong>Nenhuma cobrança antecipada</strong><br>Não pedimos depósito, pix ou taxa de liberação. Nunca.</span>
-        </li>
-        <li>
-          <span class="simular-icone" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0-7.8 13.5L3 21l4.7-1.2A9 9 0 1 0 12 3Z"/><path d="M8.5 12h7M8.5 9h7M8.5 15h4"/></svg></span>
-          <span><strong>Análise sem custo e sem compromisso</strong><br>Você simula aqui, manda no WhatsApp e decide depois.</span>
-        </li>
-      </ul>
-    </div>
-
-    <div class="cluster" role="group" aria-labelledby="simTitulo">
-      <h3 class="cluster-titulo" id="simTitulo">Simule seu refinanciamento</h3>
-
-      <svg class="gauge" viewBox="0 0 320 210" aria-hidden="true" focusable="false">
-        <defs>
-          <linearGradient id="arcoGrad" x1="0" y1="1" x2="1" y2="0">
-            <stop offset="0" stop-color="#006AA8"/>
-            <stop offset="1" stop-color="#00BFFF"/>
-          </linearGradient>
-        </defs>
-        <path class="arco-base" id="arcoBase" d=""/>
-        <g id="ticks"></g>
-        <path class="arco-luz" id="arcoLuz" d=""/>
-        <text class="rotulo" id="lblMin" x="62" y="206" text-anchor="middle"></text>
-        <text class="rotulo" id="lblMax" x="258" y="206" text-anchor="middle"></text>
-        <g id="agulha" transform="rotate(-120 160 140)">
-          <line class="agulha-cauda" x1="160" y1="140" x2="160" y2="158"/>
-          <line class="agulha" x1="160" y1="140" x2="160" y2="46"/>
-        </g>
-        <circle class="cubo" cx="160" cy="140" r="9"/>
-        <circle class="cubo-centro" cx="160" cy="140" r="3"/>
-      </svg>
-
-      <div class="leitura" aria-live="polite" aria-atomic="true">
-        <p class="leitura-rotulo">Parcela estimada</p>
-        <p class="num" id="parcela">—</p>
-        <p class="leitura-sub" id="parcelaSub"></p>
-      </div>
-
-      <label class="campo" for="valor">
-        <span>Valor que você precisa</span>
-        <output id="valorOut" for="valor"></output>
-      </label>
-      <input class="faixa" type="range" id="valor" min="5000" max="100000" step="1000" value="25000">
-      <div class="faixa-limites" aria-hidden="true"><span id="limMin"></span><span id="limMax"></span></div>
-
-      <p class="prazos-rotulo" id="prazosRotulo">Em quantas vezes</p>
-      <div class="prazos" role="radiogroup" aria-labelledby="prazosRotulo" id="prazos"></div>
-
-      <p class="aviso" id="aviso">Estimativa pela tabela Price. Taxa e CET definitivos vêm na proposta da instituição financeira, após análise de crédito.</p>
-
-      <a class="btn-acento" data-zap data-origem="simulador" href="#" target="_blank" rel="noopener">Simular no WhatsApp</a>
-      <noscript><p>Ative o JavaScript para usar o simulador — ou chame direto no WhatsApp pelo botão acima.</p></noscript>
-    </div>
-  </div>
-</section>
-
 <!-- ═══════════════ PRODUTOS ═══════════════ -->
 <section class="papel-sec sec" id="produtos">
   <div class="wrap">
@@ -360,10 +277,6 @@
 <section class="painel-sec fim-sec">
   <div class="wrap fim">
     <h2>Descubra quanto seu veículo libera hoje.</h2>
-    <p class="fim-leitura" aria-live="polite">
-      Sua simulação: <strong data-sim="valor">R$ 25.000</strong> em <strong data-sim="prazo">48x</strong>
-      <span class="fim-sep" aria-hidden="true">·</span> parcela estimada <strong data-sim="parcela">—</strong>
-    </p>
     <a class="btn-acento" data-zap data-origem="final" href="#" target="_blank" rel="noopener">Simular no WhatsApp</a>
     <p class="fina">Simulação sem custo e sem compromisso · não cobramos nada antecipado.</p>
   </div>

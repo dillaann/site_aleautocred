@@ -34,7 +34,8 @@ A silhueta do veículo sai de `categoriaVeiculo()`, por palavra-chave no nome do
 - Não inventar nome ou logo de banco parceiro. Só "instituições financeiras parceiras".
 - Todo dado variável mora no objeto `CONFIG` do `app.js`. Nada solto em componente.
 - Paleta e tipografia estão fechadas: azul é luz e ação, papel é o segundo material, azul sobre fundo claro usa `--acento-tinta`. Não trocar.
-- Motion ambiente só onde já existe: ignição do ponteiro, pista do hero e o trilho do "Como funciona" com o carrinho (avança sozinho enquanto visível, pausa com foco/clique — o mouse em cima não interrompe). Nada anima sozinho ao rolar — sem fade-up de seção, sem parallax. Animação em resposta a ação do usuário (hover, clique, teclado) é permitida. Tudo respeita `prefers-reduced-motion`.
+- Motion ambiente: ignição do ponteiro, o trilho do "Como funciona" com o carrinho (avança sozinho enquanto visível, pausa com foco/clique — o mouse em cima não interrompe) e as entradas ao rolar. **Entrada ao rolar é permitida e desejada** (pedido do cliente em 21/09/2026, substitui a regra anterior de não animar ao rolar): cada bloco sobe 18px e aparece uma vez só, em escadinha de 70ms, marcado por `entradas()` no app.js. Nada de parallax, nada que se repita a cada rolagem, nada que empurre layout — só opacidade e `translate`. Use `translate`, não `transform`, senão a entrada anula o hover dos cartões. Animação em resposta a ação do usuário (hover, clique, teclado) é permitida. Tudo respeita `prefers-reduced-motion`: sem JS ou com movimento reduzido, nada é marcado e a página aparece inteira.
+- O hero é foto parada: o canvas de faróis azuis (`pista()`) não é mais criado, o brilho azul (`.luz`) está desligado e o véu é cinza neutro — o fundo do hero fica na cor da própria foto, nas três páginas.
 
 ## Como trabalhar aqui
 

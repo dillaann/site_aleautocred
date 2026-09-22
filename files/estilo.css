@@ -28,9 +28,12 @@
   --foco:var(--acento);
 
   /* ── FOTO DO HERO ──────────────────────────────────────────
-     Para trocar: salve a nova foto como img/hero.jpg (horizontal,
-     assunto do lado direito). A tinta azul/noite é aplicada por
-     CSS, então a foto real entra sem reeditar cor.              */
+     Uma foto por página: a home usa img/hero.jpg e cada página de
+     produto troca esta variável no próprio data-produto, logo
+     abaixo de .hero-foto. Para trocar, salve a nova foto por cima
+     do arquivo (horizontal, assunto do lado direito). A tinta
+     azul/noite é aplicada por CSS, então a foto real entra sem
+     reeditar cor.                                               */
   --hero-img:url('img/hero.jpg');
 
   --barra-h:0px;           /* altura da barra de cookies, definida pelo JS */
@@ -101,30 +104,35 @@ img,svg{display:block;max-width:100%}
 .hero{
   position:relative;isolation:isolate;overflow:hidden;
   min-height:100dvh;display:flex;flex-direction:column;
-  background:var(--noite);
+  background:#0B0C0D;
 }
 .hero-foto{
   position:absolute;inset:0;z-index:0;
   background:var(--hero-img) center right/cover no-repeat,url('img/hero.svg') center right/cover no-repeat;
   filter:brightness(.55) contrast(1.05);
 }
+/* Uma foto por página — quem decide é o data-produto do <body>, como no JS.
+   Sem o atributo (home), vale a img/hero.jpg do :root. */
+body[data-produto="refinanciamento"]{--hero-img:url('img/hero-refinanciamento.jpg')}
+body[data-produto="financiamento"]{--hero-img:url('img/hero-financiamento.jpg')}
 .hero-tinta{display:none}
+/* O canvas de faróis (#pista) não é mais ligado em nenhuma página — o app.js
+   não o cria. A regra fica porque o elemento continua no HTML. */
 #pista{position:absolute;inset:0;z-index:2;width:100%;height:100%;mix-blend-mode:screen;opacity:.9}
+/* O véu é cinza neutro nas três páginas: ele escurece para o texto ler, sem
+   tingir a foto nem o vídeo de azul. */
 .veu{
   position:absolute;inset:0;z-index:3;
-  background:linear-gradient(90deg,var(--noite) 0%,rgba(12,16,24,.92) 30%,rgba(12,16,24,.45) 62%,rgba(12,16,24,.7) 100%);
+  background:linear-gradient(90deg,#0B0C0D 0%,rgba(11,12,13,.92) 30%,rgba(11,12,13,.45) 62%,rgba(11,12,13,.7) 100%);
 }
 .ruido{
   position:absolute;inset:0;z-index:4;pointer-events:none;opacity:.05;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
-.luz{
-  position:absolute;z-index:3;pointer-events:none;
-  left:-10%;top:-30%;width:70%;height:160%;
-  background:radial-gradient(closest-side,rgba(0,191,255,.22),rgba(0,191,255,0) 70%);
-  opacity:0;transition:opacity 1.6s ease-out .2s;
-}
-.luz.on{opacity:1}
+/* O brilho azul do hero saiu a pedido, nas três páginas. O elemento continua
+   no HTML (o app.js ainda acende a classe .on) — para trazer de volta, basta
+   reativar este bloco. */
+.luz{display:none}
 
 .topo{position:relative;z-index:5;padding:22px 0}
 .topo-in{display:flex;align-items:center;justify-content:space-between;gap:16px}
@@ -584,24 +592,51 @@ img,svg{display:block;max-width:100%}
 .atendente-frase{font-size:1.25rem;margin-top:20px;max-width:34rem;text-wrap:pretty}
 .atendente-nome{margin-top:24px}
 
-/* Documentos */
-.docs{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:36px}
+/* Documentos — uma peça só: as quatro linhas dividem o mesmo cartão, e a
+   faixa do WhatsApp é o rodapé dele. Antes eram quatro cartõezinhos soltos
+   mais uma barra separada, o que picotava a seção. */
+.docs{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:0;margin-top:36px;
+  background:var(--branco);border:1px solid rgba(15,23,32,.1);
+  border-radius:18px 18px 0 0;overflow:hidden;
+  box-shadow:0 1px 2px rgba(15,23,32,.04);
+}
 .doc{
   display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:start;
-  background:var(--branco);border:1px solid rgba(15,23,32,.1);border-radius:12px;padding:22px 24px;
-  transition:border-color .2s,box-shadow .2s,transform .2s;
+  padding:24px 26px;position:relative;
+  transition:background .2s;
 }
-.doc:hover{border-color:rgba(0,106,168,.35);transform:translateY(-2px);box-shadow:0 14px 30px rgba(15,23,32,.08)}
-.doc-icone{width:44px;height:44px;border-radius:10px;background:rgba(0,106,168,.08);display:grid;place-items:center}
-.doc-icone svg{width:24px;height:24px;fill:none;stroke:var(--acento-tinta);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.doc-texto{display:flex;flex-direction:column;gap:4px}
-.doc-texto strong{font-size:1.05rem}
-.doc-tag{font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--grafite-papel);margin-top:6px}
-.doc-tag.obrigatorio{color:var(--acento-tinta)}
+/* Os fios que separam as células saem das próprias linhas, não de bordas do
+   cartão — assim não sobra fio solto na beirada. */
+.doc:nth-child(odd){border-right:1px solid rgba(15,23,32,.09)}
+.doc:nth-child(-n+2){border-bottom:1px solid rgba(15,23,32,.09)}
+.doc:hover{background:rgba(0,106,168,.035)}
+.doc-icone{
+  width:42px;height:42px;border-radius:12px;display:grid;place-items:center;
+  background:linear-gradient(160deg,rgba(0,106,168,.14),rgba(0,106,168,.06));
+  box-shadow:inset 0 0 0 1px rgba(0,106,168,.14);
+}
+.doc-icone svg{width:22px;height:22px;fill:none;stroke:var(--acento-tinta);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.doc-texto{display:flex;flex-direction:column;gap:5px;align-items:flex-start}
+.doc-texto strong{font-size:1.05rem;letter-spacing:-.01em}
+/* A etiqueta virou pastilha: lê como estado do item, não como mais uma linha
+   de texto solta embaixo. */
+.doc-tag{
+  margin-top:7px;font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--grafite-papel);background:rgba(15,23,32,.05);
+  border-radius:999px;padding:5px 11px;line-height:1;
+}
+.doc-tag.obrigatorio{
+  color:var(--acento-tinta);background:rgba(0,106,168,.1);
+  box-shadow:inset 0 0 0 1px rgba(0,106,168,.18);
+}
+/* Rodapé do mesmo cartão: o filete de destaque passou para o topo, ligando a
+   faixa às linhas de cima em vez de apontar para o lado. */
 .docs-pronto{
-  margin-top:24px;display:flex;align-items:center;justify-content:space-between;gap:24px;
-  background:var(--branco);color:var(--tinta);border:1px solid rgba(15,23,32,.1);border-left:4px solid var(--acento-tinta);
-  border-radius:12px;padding:20px 26px;
+  margin-top:0;display:flex;align-items:center;justify-content:space-between;gap:24px;
+  background:linear-gradient(180deg,rgba(0,106,168,.05),rgba(0,106,168,.09));
+  color:var(--tinta);border:1px solid rgba(15,23,32,.1);border-top:0;
+  border-radius:0 0 18px 18px;padding:22px 26px;
 }
 .docs-pronto p{max-width:40rem}
 .docs-pronto strong{color:var(--acento-tinta)}
@@ -654,27 +689,46 @@ img,svg{display:block;max-width:100%}
 .avaliacao-quem strong{color:var(--claro);font-weight:600}
 .avaliacoes-link{margin-top:36px}
 
-/* Onde estamos */
+/* Onde estamos — cada informação é uma peça, não uma lista dentro de uma
+   caixa só. O ícone ganhou moldura (o mesmo chip dos documentos, na versão
+   escura) e o horário virou pastilha de status, que é a informação que o
+   visitante procura primeiro. */
 .local{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,520px);gap:56px;align-items:start}
-.cartao{border:1px solid var(--filete);border-radius:12px;background:var(--painel);padding:26px 28px;margin-top:28px}
-.linha-info{display:flex;gap:14px;align-items:flex-start}
-.linha-info + .linha-info{margin-top:20px;padding-top:20px;border-top:1px solid var(--filete)}
-.linha-info svg{width:22px;height:22px;flex:none;stroke:var(--acento);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;margin-top:3px}
-.status{display:flex;align-items:center;gap:10px;font-weight:600}
-.status-luz{width:9px;height:9px;border-radius:50%;background:var(--grafite);flex:none}
+.cartao{margin-top:28px;display:grid;gap:12px}
+.linha-info{
+  display:flex;gap:16px;align-items:center;
+  background:var(--painel);border:1px solid var(--filete);border-radius:14px;
+  padding:16px 18px;
+  transition:border-color .2s,background .2s,transform .2s;
+}
+.linha-info:hover{border-color:var(--filete-ui);background:#171E29;transform:translateY(-1px)}
+.linha-info svg{
+  width:42px;height:42px;flex:none;padding:10px;border-radius:12px;margin-top:0;
+  stroke:var(--acento);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
+  background:rgba(0,191,255,.09);box-shadow:inset 0 0 0 1px rgba(0,191,255,.16);
+}
+.linha-info > div{min-width:0}
+.linha-info p{line-height:1.45}
+/* Aberto/fechado: pastilha, e não mais uma linha de texto com bolinha. */
+.status{
+  display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:.92rem;
+  padding:5px 12px 5px 10px;border-radius:999px;margin-bottom:4px;
+  background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px var(--filete);
+}
+.status-luz{width:8px;height:8px;border-radius:50%;background:var(--grafite);flex:none}
+.status.aberto{color:var(--acento);background:rgba(0,191,255,.1);box-shadow:inset 0 0 0 1px rgba(0,191,255,.28)}
 .status.aberto .status-luz{background:var(--acento);box-shadow:0 0 10px var(--acento)}
-.status.aberto{color:var(--acento)}
 .local-acoes{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
 
 .mapa{
-  position:relative;overflow:hidden;border-radius:14px;border:1px solid var(--filete-ui);background:var(--painel);
+  position:relative;overflow:hidden;border-radius:18px;border:1px solid var(--filete-ui);background:var(--painel);
   align-self:stretch;min-height:420px;box-shadow:0 30px 60px rgba(0,0,0,.35);
 }
 .mapa iframe{
   position:absolute;inset:0;width:100%;height:100%;border:0;display:block;
   filter:invert(.92) hue-rotate(185deg) saturate(.55) brightness(.92) contrast(.95);
 }
-.mapa::after{content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.04),inset 0 0 80px rgba(12,16,24,.55)}
+.mapa::after{content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05),inset 0 0 80px rgba(12,16,24,.5)}
 
 /* CTA final */
 .fim-sec{background:radial-gradient(70% 90% at 50% 100%,rgba(0,191,255,.14),transparent 70%) var(--noite)}
@@ -781,7 +835,7 @@ footer .links a,footer .links button{color:var(--claro);text-decoration:underlin
   .produto.largo .produto-foto{width:100%;aspect-ratio:16/9}
   .produto.largo .produto-corpo{padding:28px 30px 30px}
   .produto.largo h3{font-size:1.35rem}
-  .veu{background:linear-gradient(180deg,var(--noite) 0%,rgba(12,16,24,.9) 40%,rgba(12,16,24,.75) 100%)}
+  .veu{background:linear-gradient(180deg,#0B0C0D 0%,rgba(11,12,13,.9) 40%,rgba(11,12,13,.75) 100%)}
   .simular{grid-template-columns:1fr;gap:28px}
   .prazos-quadro{padding:18px 16px 14px}
   .prazos-tabela .linha-bt{padding:0 8px;grid-template-columns:.8fr 1fr 1.2fr}
@@ -848,4 +902,93 @@ footer .links a,footer .links button{color:var(--claro);text-decoration:underlin
   .topo-link{padding:10px 12px;font-size:.9rem}
   .fim{padding:80px 0}
   .zap{right:14px}
+}
+/* ─────────────────────────────────────────────────────────────
+   SEÇÕES CENTRADAS — SÓ NAS PÁGINAS DE PRODUTO
+   Rótulo, título, texto e o conteúdo dos componentes alinham pelo
+   centro em refinanciamento.html e financiamento.html. A home fica
+   de fora: lá o simulador e os documentos leem melhor alinhados à
+   esquerda. Quem separa as duas coisas é o data-produto do <body>,
+   o mesmo atributo que o app.js usa — a home não tem.
+   Fora daqui, de propósito: o hero e o rodapé (não são .sec) e o
+   instrumento do simulador (.cluster), que é painel de controle.
+   Este bloco fica no fim da folha para vir depois do responsivo.
+   ───────────────────────────────────────────────────────────── */
+body[data-produto] .sec > .wrap{text-align:center}
+body[data-produto] .sec .rotulo-sec{justify-content:center}
+body[data-produto] .sec .lede,
+body[data-produto] .sec .sub,
+body[data-produto] .sec .aviso{margin-inline:auto}
+body[data-produto] .cluster{text-align:left}
+
+/* Produtos */
+body[data-produto] .produto-corpo{align-items:center}
+body[data-produto] .produto-corpo > p{margin-inline:auto}
+body[data-produto] .produto-dados{justify-content:center}
+body[data-produto] .produto-dados li{align-items:center}
+body[data-produto] .produto-corpo .btn-acento,
+body[data-produto] .produto-corpo .btn-linha,
+body[data-produto] .produto-corpo .link-saiba{align-self:center}
+
+/* Simulador — a coluna de texto. A tabela de prazos mantém as
+   colunas como estão: cifra fora do seu lado não se compara. */
+body[data-produto] .simular-pontos li{flex-direction:column;align-items:center;gap:10px}
+
+/* Como funciona — o número vai para o meio da coluna e o trilho
+   (com o carro) passa a correr de centro a centro: a distância
+   entre dois centros é a largura do passo mais o gap de 32px. */
+@media (min-width:901px){
+  body[data-produto] .passo .n{left:50%;margin-left:-22px}
+  body[data-produto] .passo::before,
+  body[data-produto] .passo::after,
+  body[data-produto] .carro{left:50%;right:calc(-50% - 32px)}
+  body[data-produto] .passo-bt{text-align:center}
+}
+
+/* Documentos — o ícone sobe para cima do texto. */
+body[data-produto] .doc{grid-template-columns:minmax(0,1fr);justify-items:center;gap:14px}
+body[data-produto] .doc-texto{align-items:center}
+body[data-produto] .docs-pronto{
+  flex-direction:column;align-items:center;text-align:center;
+  border-left:1px solid rgba(15,23,32,.1);border-top:4px solid var(--acento-tinta);
+}
+
+/* Perguntas — o número passa a ter a largura da seta, para a
+   pergunta cair no meio do botão. */
+body[data-produto] .faq-n{width:34px}
+body[data-produto] .faq-q{text-align:center}
+body[data-produto] .faq-corpo p{padding:0 22px 22px;margin-inline:auto}
+body[data-produto] .faq-ajuda{border-left:1px solid rgba(15,23,32,.1);border-top:4px solid var(--acento-tinta)}
+
+/* Quem atende, avaliações e onde estamos */
+body[data-produto] .atendente-foto,
+body[data-produto] .atendente-frase{margin-inline:auto}
+body[data-produto] .linha-info,
+body[data-produto] .status,
+body[data-produto] .local-acoes{justify-content:center}
+
+@media (max-width:900px){
+  /* Trilho em pé: o passo volta a ler da esquerda, junto do número. */
+  body[data-produto] .passo{text-align:left}
+  body[data-produto] .faq-corpo p{padding:0 18px 18px}
+}
+
+/* ─────────────────────────────────────────────────────────────
+   ENTRADAS AO ROLAR
+   Cada bloco sobe um pouco e aparece quando entra na tela, uma
+   vez só. Quem marca os elementos é entradas(), no app.js: sem
+   JS nada é marcado e a página aparece inteira, como antes.
+   Só opacidade e translate — nada empurra layout, então não há
+   salto de conteúdo (CLS zero).
+   ───────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion:no-preference){
+  /* Usa translate, não transform: assim a entrada não briga com o transform
+     de hover dos cartões (.produto e .doc levantam ao passar o mouse) — as
+     duas coisas se somam em vez de uma anular a outra. */
+  .entra{
+    opacity:0;translate:0 18px;
+    transition:opacity .6s cubic-bezier(.22,.61,.36,1) var(--atraso,0ms),
+               translate .6s cubic-bezier(.22,.61,.36,1) var(--atraso,0ms);
+  }
+  .entra.dentro{opacity:1;translate:none}
 }
