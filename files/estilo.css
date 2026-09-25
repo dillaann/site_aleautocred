@@ -13,7 +13,9 @@
   /* ── AZUL: a luz e a ação ── */
   --acento:#00BFFF;         /* retroiluminação e botões (8,97:1 sobre noite) */
   --acento-luz:#66D9FF;     /* só brilho e hover, nunca texto pequeno */
-  --acento-tinta:#006AA8;   /* azul sobre fundo claro (5,33:1 sobre papel) */
+  --acento-tinta:#006AA8;   /* azul sobre fundo claro (5,33:1 sobre papel) e  */
+                            /* fundo do botão cheio (5,79:1 com texto branco) */
+  --acento-tinta-luz:#0A75B8; /* só o hover do botão cheio (4,94:1 com branco) */
 
   /* ── CLARO: papel de contrato ── */
   --papel:#F1F6FB;         /* papel frio */
@@ -27,14 +29,11 @@
 
   --foco:var(--acento);
 
-  /* ── FOTO DO HERO ──────────────────────────────────────────
-     Uma foto por página: a home usa img/hero.jpg e cada página de
-     produto troca esta variável no próprio data-produto, logo
-     abaixo de .hero-foto. Para trocar, salve a nova foto por cima
-     do arquivo (horizontal, assunto do lado direito). A tinta
-     azul/noite é aplicada por CSS, então a foto real entra sem
-     reeditar cor.                                               */
-  --hero-img:url('img/hero.jpg');
+  /* A foto do hero não mora mais aqui. Cada página traz a sua no
+     <picture> do próprio HTML, com srcset por tamanho de tela; o
+     CSS só cuida do enquadramento e do tratamento, em .hero-foto.
+     Para trocar a foto: original grande em img/fonte/ e
+     `node ferramentas/imagens.mjs`.                               */
 
   --barra-h:0px;           /* altura da barra de cookies, definida pelo JS */
 }
@@ -70,33 +69,60 @@ img,svg{display:block;max-width:100%}
 :focus-visible{outline:3px solid var(--foco);outline-offset:3px;border-radius:4px}
 .papel-sec :focus-visible{outline-color:var(--acento-tinta)}
 
-.pula{position:absolute;left:-999px;top:12px;background:var(--acento);color:var(--tinta);padding:10px 16px;border-radius:6px;font-weight:600;z-index:100}
+.pula{position:absolute;left:-999px;top:12px;background:var(--acento-tinta);color:var(--branco);padding:10px 16px;border-radius:6px;font-weight:600;z-index:100}
 .pula:focus{left:12px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* ─────────────────────────────────────────────────────────────
    BOTÕES
    ───────────────────────────────────────────────────────────── */
+/* O botão cheio usa o azul de tinta (#006AA8), não o azul de luz (#00BFFF)
+   — pedido em 23/09/2026. O texto vai a BRANCO junto, e isso não é escolha
+   de gosto: sobre o azul de tinta, o texto escuro dá 3,1:1 e reprova; o
+   branco dá 5,8:1. Trocar o fundo sem trocar o texto quebra o contraste. */
 .btn-acento{
   display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  background:var(--acento);color:var(--tinta);
+  background:var(--acento-tinta);color:var(--branco);
   font-weight:600;padding:16px 26px;min-height:52px;border-radius:6px;
   text-decoration:none;text-align:center;
   box-shadow:0 0 0 0 rgba(0,191,255,0);
   transition:background .15s,box-shadow .2s;
 }
-.btn-acento:hover{background:var(--acento-luz);box-shadow:0 0 28px rgba(0,191,255,.28)}
-.papel-sec .btn-acento{box-shadow:inset 0 0 0 1px var(--acento-tinta)}
-.papel-sec .btn-acento:hover{box-shadow:inset 0 0 0 1px var(--acento-tinta),0 0 28px rgba(0,191,255,.28)}
+/* No hover o botão acende, como o resto do painel. O tom clareia só até onde
+   o branco ainda passa em AA (4,9:1) — mais claro que isso e o texto cai. */
+.btn-acento:hover{background:var(--acento-tinta-luz);box-shadow:0 0 28px rgba(0,191,255,.28)}
+/* Sobre papel o filete interno saiu: ele existia para separar o azul de luz
+   do branco da página, e o azul de tinta já se separa sozinho. */
+.papel-sec .btn-acento:hover{box-shadow:0 0 28px rgba(0,106,168,.3)}
+/* O secundário sobre escuro tem um preenchimento de leve. Só a borda não
+   bastava: contra a foto do hero o filete cinza sumia e, ao lado de um
+   principal sólido, o botão lia como retângulo vazio em vez de botão
+   (24/09/2026). O preenchimento é branco translúcido, não azul, justamente
+   para não competir com o principal nem invadir o hover. */
 .btn-linha{
   display:inline-flex;align-items:center;justify-content:center;
-  border:1px solid var(--filete-ui);color:var(--claro);
+  border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.07);
+  color:var(--claro);
   padding:15px 26px;min-height:52px;border-radius:6px;text-decoration:none;
   transition:border-color .15s,background .15s;
 }
-.btn-linha:hover{border-color:var(--acento);background:rgba(0,191,255,.08)}
-.papel-sec .btn-linha{border-color:var(--acento-tinta);color:var(--acento-tinta)}
-.papel-sec .btn-linha:hover{background:rgba(0,106,168,.08)}
+/* O hover tem de ser mais forte que o repouso: em .08 ele ficava mais fraco
+   que os .07 de branco do estado normal e o botão parecia apagar ao passar
+   o mouse. */
+.btn-linha:hover{border-color:var(--acento);background:rgba(0,191,255,.16)}
+/* Sobre fundo claro o botão de linha também é cheio (23/09/2026). Nos cards
+   e nos blocos de produto ele é a única ação do bloco, então não há
+   hierarquia a perder — e o contornado sobre card branco lia como desligado.
+   O padding é 1px menor que o do .btn-acento e a borda devolve esse 1px, por
+   isso os dois fecham na mesma altura quando aparecem juntos. */
+.papel-sec .btn-linha{background:var(--acento-tinta);border-color:var(--acento-tinta);color:var(--branco)}
+.papel-sec .btn-linha:hover{background:var(--acento-tinta-luz);border-color:var(--acento-tinta-luz)}
+/* A exceção é .local-acoes, o único lugar claro onde os dois tipos dividem a
+   linha: "Traçar rota no Google Maps" é a ação principal e "Combinar uma
+   visita" é a secundária. Cheios no mesmo azul ficariam idênticos e o
+   visitante perderia qual é qual — ali o secundário segue contornado. */
+.papel-sec .local-acoes .btn-linha{background:transparent;border-color:var(--acento-tinta);color:var(--acento-tinta)}
+.papel-sec .local-acoes .btn-linha:hover{background:rgba(0,106,168,.08);border-color:var(--acento-tinta)}
 
 /* ─────────────────────────────────────────────────────────────
    HERO — painel apagado que acende
@@ -106,24 +132,35 @@ img,svg{display:block;max-width:100%}
   min-height:100dvh;display:flex;flex-direction:column;
   background:#0B0C0D;
 }
+/* A foto entra menos escurecida do que antes: quem faz o contraste do texto é
+   o véu (.veu), em camadas. Escurecer nos dois lugares empastava a imagem —
+   o carro virava um borrão. A dessaturação tira o verde das árvores da
+   frente do azul da marca.
+   Quem carrega a foto é o <picture> no HTML de cada página, não mais este
+   arquivo: com background-image o navegador só descobre a imagem depois de
+   ler o CSS, e não há como pedir um tamanho por tela. O que sobra aqui é o
+   enquadramento e o tratamento. O hero.svg fica de reserva, atrás. */
 .hero-foto{
-  position:absolute;inset:0;z-index:0;
-  background:var(--hero-img) center right/cover no-repeat,url('img/hero.svg') center right/cover no-repeat;
-  filter:brightness(.55) contrast(1.05);
+  position:absolute;inset:0;z-index:0;display:block;
+  background:url('img/hero.svg') center right/cover no-repeat;
+  filter:brightness(.74) contrast(1.06) saturate(.68);
 }
-/* Uma foto por página — quem decide é o data-produto do <body>, como no JS.
-   Sem o atributo (home), vale a img/hero.jpg do :root. */
-body[data-produto="refinanciamento"]{--hero-img:url('img/hero-refinanciamento.jpg')}
-body[data-produto="financiamento"]{--hero-img:url('img/hero-financiamento.jpg')}
+.hero-foto img{width:100%;height:100%;object-fit:cover;object-position:center right}
 .hero-tinta{display:none}
 /* O canvas de faróis (#pista) não é mais ligado em nenhuma página — o app.js
    não o cria. A regra fica porque o elemento continua no HTML. */
 #pista{position:absolute;inset:0;z-index:2;width:100%;height:100%;mix-blend-mode:screen;opacity:.9}
 /* O véu é cinza neutro nas três páginas: ele escurece para o texto ler, sem
-   tingir a foto nem o vídeo de azul. */
+   tingir a foto nem o vídeo de azul. São três camadas, cada uma com um
+   trabalho: o topo para o menu ler sobre qualquer parte da foto, a base para
+   a foto assentar e o corte para o papel não ficar seco, e a horizontal para
+   segurar a coluna de texto à esquerda deixando a direita limpa. */
 .veu{
   position:absolute;inset:0;z-index:3;
-  background:linear-gradient(90deg,#0B0C0D 0%,rgba(11,12,13,.92) 30%,rgba(11,12,13,.45) 62%,rgba(11,12,13,.7) 100%);
+  background:
+    linear-gradient(180deg,rgba(11,12,13,.74) 0%,rgba(11,12,13,0) 24%),
+    linear-gradient(0deg,rgba(11,12,13,.95) 0%,rgba(11,12,13,.42) 14%,rgba(11,12,13,0) 42%),
+    linear-gradient(90deg,#0B0C0D 0%,rgba(11,12,13,.9) 26%,rgba(11,12,13,.5) 48%,rgba(11,12,13,.12) 74%,rgba(11,12,13,.34) 100%);
 }
 .ruido{
   position:absolute;inset:0;z-index:4;pointer-events:none;opacity:.05;
@@ -134,19 +171,70 @@ body[data-produto="financiamento"]{--hero-img:url('img/hero-financiamento.jpg')}
    reativar este bloco. */
 .luz{display:none}
 
-.topo{position:relative;z-index:5;padding:22px 0}
+/* z-index acima do .hero-grid (que também é 5): os dois eram irmãos com o
+   mesmo nível e, como o hero vem depois no HTML, ele pintava por cima — a
+   gaveta do menu abria atrás do h1 e os links não recebiam toque. */
+.topo{position:relative;z-index:8;padding:22px 0}
 .topo-in{display:flex;align-items:center;justify-content:space-between;gap:16px}
+/* MARCA — símbolo + nome em duas linhas (24/09/2026).
+   Antes era só "ALE AUTO CRED" numa linha esticada (letter-spacing .14em,
+   font-stretch 112%), que ocupava 205px. Agora são 128px.
+
+   As duas linhas são CENTRALIZADAS entre si, não alinhadas à esquerda.
+   Isso não é estética: "ALE" tem 50px e "AUTO CRED" tem 75px, então
+   alinhadas à esquerda sobravam 25px pendurados à direita e o bloco ficava
+   torto. Já tentamos igualar as larguras esticando o espaçamento da linha
+   curta — fica mecânico e foi recusado. Centralizar resolve sem forçar
+   nenhuma das duas. Se o nome fantasia mudar, o centro continua valendo. */
 .marca{
-  font-family:'Archivo',sans-serif;font-weight:700;font-stretch:112%;
-  letter-spacing:.14em;font-size:.95rem;text-decoration:none;color:var(--claro);
+  display:inline-flex;align-items:center;gap:11px;min-height:44px;
+  text-decoration:none;color:var(--claro);
+  font-family:'Archivo',sans-serif;text-transform:uppercase;font-stretch:100%;
 }
-.marca b{color:var(--acento);font-weight:700}
+.marca-simbolo{width:42px;height:42px;border-radius:5px;flex:none}
+.marca-nome{display:flex;flex-direction:column;align-items:center;line-height:1;gap:3px}
+.marca-l1{font-weight:700;font-size:1.35rem;letter-spacing:.02em}
+.marca-l2{font-weight:600;font-size:.62rem;letter-spacing:.10em}
+/* Botão cheio branco (escolhido em 24/09/2026). Antes era contornado em
+   --filete-ui e sumia contra a foto do hero — lia como retângulo vazio.
+   É o único botão branco do site, de propósito: o cabeçalho fica sobre
+   foto, que muda de página para página e de trecho para trecho da mesma
+   foto, e o branco é a única cor que se segura em qualquer fundo.
+   No estreito ele some (.topo-in .topo-link some em ≤900px), então isto
+   só vale de tablet grande para cima. */
 .topo-link{
-  color:var(--claro);text-decoration:none;font-weight:500;font-size:.95rem;
-  border:1px solid var(--filete-ui);border-radius:6px;padding:10px 16px;min-height:44px;
-  display:inline-flex;align-items:center;transition:border-color .15s;
+  color:var(--tinta);text-decoration:none;font-weight:600;font-size:.95rem;
+  background:var(--branco);border:1px solid var(--branco);
+  border-radius:6px;padding:10px 16px;min-height:44px;
+  display:inline-flex;align-items:center;transition:background .15s,box-shadow .2s;
 }
-.topo-link:hover{border-color:var(--acento)}
+/* Branco não tem como clarear no hover, então quem acende é o halo — mesma
+   ideia do brilho dos outros botões, trocando a cor pela luz. */
+.topo-link:hover{background:var(--papel);box-shadow:0 0 0 4px rgba(255,255,255,.18)}
+
+/* O painel só existe como caixa no celular. Em tela grande ele é
+   `display:contents`: some do layout, e o <nav> e o botão do topo voltam a
+   ser filhos diretos do .topo-in, exatamente como eram antes de existir. */
+.topo-painel{display:contents}
+
+/* Botão de três barras — só aparece no celular (ver o bloco ≤600px). */
+.menu-bt{
+  display:none;width:44px;height:44px;flex:none;margin-left:auto;
+  align-items:center;justify-content:center;border-radius:8px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.3);
+}
+.menu-bt-barras,.menu-bt-barras::before,.menu-bt-barras::after{
+  display:block;width:20px;height:2px;border-radius:1px;background:var(--claro);
+  transition:transform .25s ease,opacity .18s ease;
+}
+.menu-bt-barras{position:relative}
+.menu-bt-barras::before,.menu-bt-barras::after{content:"";position:absolute;left:0}
+.menu-bt-barras::before{top:-6px}
+.menu-bt-barras::after{top:6px}
+/* Aberto, as três barras viram um X: a do meio some e as outras cruzam. */
+.menu-bt[aria-expanded="true"] .menu-bt-barras{background:transparent}
+.menu-bt[aria-expanded="true"] .menu-bt-barras::before{transform:translateY(6px) rotate(45deg)}
+.menu-bt[aria-expanded="true"] .menu-bt-barras::after{transform:translateY(-6px) rotate(-45deg)}
 
 /* Navegação principal — o item da página atual fica aceso e sublinhado. */
 .menu{display:flex;align-items:center;gap:4px}
@@ -174,20 +262,33 @@ body[data-produto="financiamento"]{--hero-img:url('img/hero-financiamento.jpg')}
   align-items:center;padding:36px 0 72px;
 }
 .hero-txt{max-width:44rem}
-.hero-txt{opacity:0;transform:translateY(10px);transition:opacity .9s ease-out .3s,transform .9s ease-out .3s}
+/* A entrada do hero é em escadinha, peça por peça, e não mais um bloco só que
+   ficava 300ms invisível e levava 900ms para aparecer — o primeiro quadro
+   parecia página carregando. Mesma linguagem das entradas ao rolar. */
+.hero-txt > *{opacity:0;translate:0 14px;transition:opacity .55s ease-out,translate .55s cubic-bezier(.22,1,.36,1)}
+.hero-txt.on > *{opacity:1;translate:none}
+.hero-txt.on > :nth-child(1){transition-delay:.04s}
+.hero-txt.on > :nth-child(2){transition-delay:.11s}
+.hero-txt.on > :nth-child(3){transition-delay:.18s}
+.hero-txt.on > :nth-child(4){transition-delay:.25s}
+.hero-txt.on > :nth-child(5){transition-delay:.32s}
 .ctas .btn-acento{min-width:200px}
-.hero-txt.on{opacity:1;transform:none}
 .selo{
   color:var(--acento);font-size:.85rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
-  display:flex;align-items:center;gap:12px;margin-bottom:22px;
+  display:flex;align-items:flex-start;gap:12px;margin-bottom:22px;
 }
-.selo::before{content:"";width:28px;height:2px;background:var(--acento);box-shadow:0 0 10px var(--acento)}
+/* Alinhado pela primeira linha, não pelo centro: no mobile o selo quebra em
+   duas linhas e o filete centrado ficava solto no meio. */
+.selo::before{content:"";flex:0 0 28px;height:2px;margin-top:.58em;background:var(--acento);box-shadow:0 0 10px var(--acento)}
 .sub{color:var(--grafite);font-size:1.15rem;max-width:34rem;margin:22px 0 28px}
-.hero-txt .sub{color:var(--claro);opacity:.86}
+.hero-txt .sub{color:var(--claro);opacity:.9;text-wrap:pretty}
 .ctas{display:flex;flex-wrap:wrap;gap:12px}
+/* A linha de confiança fecha o hero: um filete por cima a separa dos botões
+   sem precisar de mais uma caixa. */
 .confia{
-  display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:34px;
-  color:var(--grafite);font-size:.92rem;
+  display:flex;flex-wrap:wrap;gap:10px 26px;margin-top:34px;padding-top:22px;
+  border-top:1px solid rgba(255,255,255,.1);max-width:36rem;
+  color:var(--claro);opacity:.78;font-size:.92rem;
 }
 .confia span{display:inline-flex;align-items:center;gap:8px}
 .confia span::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--acento);box-shadow:0 0 8px var(--acento)}
@@ -223,7 +324,11 @@ body[data-produto="financiamento"]{--hero-img:url('img/hero-financiamento.jpg')}
 .prazos-tabela tr.ativo .linha-bt{background:rgba(0,191,255,.12);box-shadow:inset 3px 0 0 var(--acento-tinta)}
 .prazos-tabela tr.ativo .parcela-n{color:var(--acento-tinta)}
 .prazos-quadro .fina{margin-top:12px;font-size:.8rem}
-.simular-pontos{list-style:none;padding:0;margin:22px 0 0;display:grid;gap:12px}
+/* O respiro ENTRE itens tem de ser maior que o respiro DENTRO do item, senão
+   os três se misturam numa coluna só. Era 12px entre e 10px dentro — quase
+   iguais — e por isso o ícone de um item parecia pertencer ao texto do
+   anterior. Se mexer aqui, mantenha a diferença. */
+.simular-pontos{list-style:none;padding:0;margin:28px 0 0;display:grid;gap:20px}
 .simular-pontos li{display:flex;align-items:flex-start;gap:14px;color:var(--grafite-papel);font-size:.95rem;line-height:1.5}
 .simular-pontos li strong{color:var(--tinta);font-weight:600}
 .simular-icone{width:40px;height:40px;border-radius:10px;flex:none;background:rgba(11,99,154,.09);display:grid;place-items:center}
@@ -459,7 +564,17 @@ body[data-produto="financiamento"]{--hero-img:url('img/hero-financiamento.jpg')}
 .passo.feito::after{transform:scaleX(1)}
 .passos.andando .passo.ativo::after{transform:scaleX(1);transition:transform var(--passo-dur) linear}
 .passo h3{font-size:1.2rem;line-height:1.25}
-.passo-bt{display:block;text-align:left;width:100%;padding:0;font:inherit;color:var(--tinta);border-radius:8px}
+/* Área de toque de 44px sem mexer no layout: o padding cresce a caixa
+   clicável e a margem negativa devolve o mesmo tanto, então a caixa de
+   margem — que é o que o h3 enxerga — não muda de tamanho. O botão do passo
+   media 40px no celular e 24px no iPad deitado, abaixo do mínimo de toque.
+
+   NÃO usar `position:relative` aqui. O número do passo (.passo .n) é
+   `position:absolute; left:0` e se posiciona pelo primeiro ancestral
+   posicionado. Com o botão posicionado, ele passa a contar a partir do
+   botão — que já está depois dos 58px de recuo do passo no celular — e o
+   círculo cai em cima do título. Foi o que aconteceu em 24/09/2026. */
+.passo-bt{display:block;text-align:left;width:100%;padding:10px 0;margin:-10px 0;font:inherit;color:var(--tinta);border-radius:8px}
 .passo-bt:hover .passo-titulo{color:var(--acento-tinta)}
 /* O carrinho corre no mesmo trilho e na mesma duração da luz. Cada número é
    uma lombada: ele sobe, passa por cima e desce do outro lado — por isso
@@ -760,8 +875,18 @@ body[data-produto="financiamento"]{--hero-img:url('img/hero-financiamento.jpg')}
 .papel-sec .mapa::after{box-shadow:inset 0 0 0 1px rgba(15,23,32,.08)}
 
 /* CTA final */
-.fim-sec{background:radial-gradient(70% 90% at 50% 100%,rgba(0,191,255,.14),transparent 70%) var(--noite)}
-.fim{text-align:center;padding:110px 0;display:flex;flex-direction:column;align-items:center;gap:26px}
+/* Sem brilho azul: o título e o botão carregam o bloco sozinhos, e o fim da
+   página é uma superfície chapada do CTA até o rodapé.
+   O brilho já foi tentado em três versões e todas caíram (23/09/2026):
+   ancorado na borda de baixo daqui, ele era cortado a seco pelo rodapé;
+   espalhado metade em cada um, virava uma mancha frouxa no meio, sem
+   pertencer a bloco nenhum; e sozinho no rodapé ficou tão parecido com a
+   versão anterior que não valia o código. Não reintroduzir sem pedido. */
+.fim-sec{background:var(--noite)}
+/* O respiro de baixo é menor que o de cima de propósito: embaixo o rodapé já
+   começa com 64px de padding próprio, e somar os dois cheios abria 166px de
+   vazio entre a última linha do CTA e a primeira do rodapé. */
+.fim{text-align:center;padding:110px 0 72px;display:flex;flex-direction:column;align-items:center;gap:26px}
 .fim h2{max-width:22ch}
 .fim-leitura{
   display:inline-flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 8px;
@@ -773,26 +898,40 @@ body[data-produto="financiamento"]{--hero-img:url('img/hero-financiamento.jpg')}
 .fim-sep{color:var(--filete-ui)}
 
 /* Rodapé */
-footer{background:var(--noite);border-top:1px solid var(--filete);padding:56px 0 40px;color:var(--grafite);font-size:.95rem}
+/* O rodapé é a segunda superfície escura (--painel), a mesma que o site já
+   usa em .painel-sec.elevado. Não é decoração: com ele em --noite chapado,
+   igual ao CTA e sem borda, o fim da página virava um retângulo preto de
+   ~880px com dois blocos de texto boiando dentro, sem estrutura nenhuma —
+   era o que estava errado em 23/09/2026, depois de tirarmos o brilho.
+   A troca de superfície separa os dois sem filete e sem brilho, que foram
+   as duas tentativas recusadas antes. */
+footer{background:var(--painel);padding:64px 0 40px;color:var(--grafite);font-size:.95rem}
 footer strong{color:var(--claro);display:block;margin-bottom:8px}
 footer .cols{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:32px}
 footer .cols p{margin-top:2px}
 footer .legal{margin-top:44px;padding-top:24px;border-top:1px solid var(--filete);font-size:.85rem;line-height:1.6;max-width:70rem}
-footer .links{margin-top:14px;display:flex;flex-wrap:wrap;gap:6px 18px}
-footer .links a,footer .links button{color:var(--claro);text-decoration:underline;text-underline-offset:3px;padding:0;min-height:0}
+footer .links{margin-top:2px;display:flex;flex-wrap:wrap;gap:0 18px}
+/* Alvo de toque de 44px. Estes dois tinham padding:0 e min-height:0 escritos
+   à mão, o que deixava o alvo em 22px de altura — metade do mínimo. O padding
+   vertical devolve o alvo; a margem de cima do bloco caiu de 14 para 2px
+   porque o próprio padding já dá o respiro. */
+footer .links a,footer .links button{
+  color:var(--claro);text-decoration:underline;text-underline-offset:3px;
+  display:inline-flex;align-items:center;padding:11px 0;min-height:44px;
+}
 
 /* WhatsApp flutuante */
 .zap{
   position:fixed;right:20px;bottom:calc(20px + var(--barra-h));z-index:60;
   width:60px;height:60px;border-radius:50%;
   display:inline-flex;align-items:center;justify-content:center;
-  background:var(--acento);color:var(--tinta);
-  box-shadow:0 12px 30px rgba(0,0,0,.4),0 0 24px rgba(0,191,255,.35);
+  background:var(--acento-tinta);color:var(--branco);
+  box-shadow:0 12px 30px rgba(0,0,0,.4),0 0 24px rgba(0,106,168,.45);
   opacity:0;transform:translateY(16px);pointer-events:none;
   transition:opacity .25s,transform .25s,bottom .25s;
 }
 .zap.on{opacity:1;transform:none;pointer-events:auto}
-.zap:hover{background:var(--acento-luz)}
+.zap:hover{background:var(--acento-tinta-luz)}
 .zap svg{width:30px;height:30px;fill:currentColor}
 
 /* Barra de cookies */
@@ -822,7 +961,8 @@ footer .links a,footer .links button{color:var(--claro);text-decoration:underlin
    ───────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
-  .luz,.hero-txt,.faq-corpo,.zap,.btn-acento,.produto,.produto-foto img,.passo::after,.passo .n,.doc,.faq-seta,.faq-item{transition:none}
+  .luz,.hero-txt,.hero-txt>*,.faq-corpo,.zap,.btn-acento,.produto,.produto-foto img,.passo::after,.passo .n,.doc,.faq-seta,.faq-item{transition:none}
+  .hero-txt.on>*{transition-delay:0s}
   .doc:hover{transform:none}
   .passos.andando .passo.ativo::after{transition:none}
   .passos.rebobinando .passo::after,.passos.rebobinando .passo .n{animation:none}
@@ -850,7 +990,6 @@ footer .links a,footer .links button{color:var(--claro);text-decoration:underlin
 @media (max-width:900px){
   .hero{min-height:0}
   .hero-grid{padding:28px 0 56px}
-  .ctas .btn-acento,.ctas .btn-linha{flex:1 1 100%}
   /* O menu desce para uma linha própria e o botão do topo sai — o flutuante
      de WhatsApp já cobre essa ação no mobile. */
   .topo{padding:16px 0 10px}
@@ -864,7 +1003,23 @@ footer .links a,footer .links button{color:var(--claro);text-decoration:underlin
   .produto.largo .produto-foto{width:100%;aspect-ratio:16/9}
   .produto.largo .produto-corpo{padding:28px 30px 30px}
   .produto.largo h3{font-size:1.35rem}
-  .veu{background:linear-gradient(180deg,#0B0C0D 0%,rgba(11,12,13,.9) 40%,rgba(11,12,13,.75) 100%)}
+  /* No estreito o véu vira vertical: o texto ocupa a largura toda, então o
+     escuro firme fica em cima (menu, selo, h1) e vai abrindo para baixo, onde
+     só há botões e a linha de confiança. Antes fechava em .75 até embaixo e a
+     foto sumia — o hero no celular era um retângulo preto. */
+  .veu{
+    background:linear-gradient(180deg,rgba(11,12,13,.96) 0%,rgba(11,12,13,.9) 20%,rgba(11,12,13,.7) 46%,rgba(11,12,13,.54) 72%,rgba(11,12,13,.86) 100%);
+  }
+  .hero-foto{filter:brightness(.86) contrast(1.06) saturate(.68)}
+  /* Onde o celular recebe o recorte em pé (home e financiamento), o
+     enquadramento já veio pronto do ferramentas/imagens.mjs e o certo é
+     centralizar. Manter o `center right` do padrão empurraria o corte para
+     a borda de novo e jogaria fora justamente o que o recorte preservou —
+     foi o que cortou o rosto da mulher no financiamento em 23/09/2026.
+     O refinanciamento fica de fora: ele ainda usa a foto deitada, e nela o
+     `center right` do padrão serve. */
+  body:not([data-produto]) .hero-foto img,
+  body[data-produto="financiamento"] .hero-foto img{object-position:center}
   .simular{grid-template-columns:1fr;gap:28px}
   .prazos-quadro{padding:18px 16px 14px}
   .prazos-tabela .linha-bt{padding:0 8px;grid-template-columns:.8fr 1fr 1.2fr}
@@ -892,6 +1047,13 @@ footer .links a,footer .links button{color:var(--claro);text-decoration:underlin
   .passos.andando .passo.ativo .carro-corpo{animation:none}
   .carro svg{width:40px;height:19.1px}
   .passo:nth-child(2) .carro{display:block}
+  /* ...mas o carrinho nao aparece em nenhum passo ate 900px (pedido em
+     24/09/2026): e a faixa onde a linha do tempo fica em pe, e nela o carro
+     atravessado no trilho polui em vez de ajudar. O trilho continua, que e a
+     barra de progresso dos passos e funciona sozinha.
+     O seletor tem tres classes para empatar com o .passo:nth-child(2) acima
+     e vencer pela ordem; um .carro simples perderia por especificidade. */
+  .passos .passo .carro{display:none}
   .passo .n{width:40px;height:40px;font-size:.85rem}
   .passo-titulo{min-height:40px;display:flex;align-items:center}
   .passo h3{font-size:1.1rem}
@@ -911,7 +1073,7 @@ footer .links a,footer .links button{color:var(--claro);text-decoration:underlin
   .local{grid-template-columns:1fr;gap:28px}
   .mapa{min-height:0;aspect-ratio:4/3;align-self:auto}
   .local-acoes .btn-acento,.local-acoes .btn-linha{width:100%}
-  .fim{padding:80px 0}
+  .fim{padding:80px 0 56px}
   .fim-leitura{border-radius:14px;padding:12px 16px;font-size:.9rem}
   footer .cols{grid-template-columns:1fr;gap:24px}
   .cookies{padding:12px 0}
@@ -919,6 +1081,143 @@ footer .links a,footer .links button{color:var(--claro);text-decoration:underlin
   .cookies p{font-size:.85rem;line-height:1.45}
   .cookies-acoes{display:grid;grid-template-columns:1fr 1fr}
   .sec{padding:72px 0}
+}
+/* ENTRE O CELULAR E O DESKTOP
+   Nessa faixa o hero perdia as duas coisas que o fazem hero: ficava com
+   altura de bloco comum (o min-height cai no ≤900) e os botões esticavam de
+   ponta a ponta, porque a regra de largura cheia valia até 900px. Botão de
+   780px de largura não parece botão. */
+@media (min-width:601px) and (max-width:900px){
+  /* Altura cheia, igual ao celular e ao desktop. Estava em 82svh para a
+     proxima secao espiar e sinalizar rolagem, mas num iPad Air isso virava
+     212px de faixa clara embaixo do hero — buraco, nao espiada. */
+  .hero{min-height:100vh;min-height:100svh}
+  .hero-grid{padding:36px 0 64px}
+  /* Aqui o texto ocupa a largura toda, então o véu precisa fechar mais do
+     que no celular para o parágrafo não cair em cima do capô aceso. */
+  .veu{
+    background:linear-gradient(180deg,rgba(11,12,13,.95) 0%,rgba(11,12,13,.86) 28%,rgba(11,12,13,.73) 58%,rgba(11,12,13,.58) 82%,rgba(11,12,13,.88) 100%);
+  }
+
+  /* TABLET (iPad) — 24/09/2026.
+     Até aqui o ≤900px colapsava TUDO para uma coluna, então um iPad de 820px
+     recebia o layout de celular e virava um telefone gigante: a home ficava
+     com 8100px de altura. Estas regras devolvem as grades que cabem com
+     folga nessa largura. O que NÃO volta, de propósito: o simulador (o
+     instrumento pede 360px e a coluna de texto também, não cabem lado a
+     lado), o "Como funciona" (a linha do tempo em pé tem geometria própria
+     de trilho e carrinho, que remontar aqui traria mais risco que ganho) e
+     o FAQ (layout de três áreas). */
+
+  /* O cabeçalho cabe inteiro numa linha: medido, sobram de 88px no iPad mini
+     a 244px em 900px. Esconder o botão aqui era tratamento de celular. */
+  .topo-in{flex-wrap:nowrap}
+  .topo-in .topo-link{display:inline-flex}
+  .menu{order:0;width:auto;margin-left:0;gap:2px}
+
+  .produtos{grid-template-columns:repeat(2,1fr);gap:20px}
+  .docs{grid-template-columns:repeat(2,1fr);gap:14px;margin-top:26px}
+  /* O mapa volta a acompanhar a altura da coluna de texto. Com o
+     `aspect-ratio:4/3` do celular ele parava em 257px e deixava mais de
+     400px de vazio ao lado do endereço e dos horários. */
+  .local{grid-template-columns:minmax(0,1fr) minmax(300px,44%);gap:30px;align-items:stretch}
+  .mapa{aspect-ratio:auto;min-height:340px;align-self:stretch}
+  .local-acoes .btn-acento,.local-acoes .btn-linha{width:auto}
+  footer .cols{grid-template-columns:1.3fr 1fr 1fr;gap:28px}
+  .sec{padding:84px 0}
+}
+/* CELULAR: menu em gaveta (24/09/2026).
+   Antes o <nav> descia para uma linha própria, empurrando a marca para cima
+   e deixando três itens alinhados à esquerda logo abaixo dela. O cabeçalho
+   virava um bloco de duas linhas desalinhado com o resto. Agora é uma linha
+   só — marca à esquerda, três barras à direita — e as seções aparecem
+   centralizadas na gaveta. */
+/* HERO CENTRALIZADO EM TABLET (24/09/2026)
+   Duas condições, e a segunda existe porque a primeira não bastava.
+
+   A primeira pega o tablet comum (iPad mini, Air, Pro 11), que fica abaixo
+   de 900px. A segunda pega o iPad Pro 13, que tem 1032px de largura em pé —
+   acima da faixa de tablet, mas ainda um tablet. O que separa ele de uma
+   janela de desktop de 1032px é a ORIENTAÇÃO: em pé é tablet, deitado é
+   desktop. Por isso a condição de retrato, e não só de largura.
+
+   Por que centralizar: nessas telas o hero enche a altura e sobram mais de
+   300px de moldura escura acima e abaixo. Com o texto à esquerda o bloco
+   ficava fora do eixo e parecia perdido. Centralizado, a moldura emoldura.
+
+   A coluna de 36rem não é capricho: texto centralizado em linha longa cansa,
+   porque o olho perde a origem da linha seguinte. */
+@media (min-width:601px) and (max-width:900px),
+       (min-width:901px) and (max-width:1100px) and (orientation:portrait){
+  .hero-txt{text-align:center;margin-inline:auto;max-width:36rem}
+  .hero-txt .selo{justify-content:center}
+  .hero-txt .sub{margin-inline:auto;max-width:30rem}
+  .hero-txt .ctas{justify-content:center}
+  .hero-txt .confia{justify-content:center;margin-inline:auto}
+}
+
+@media (max-width:600px){
+  .ctas .btn-acento,.ctas .btn-linha{flex:1 1 100%}
+
+  /* O hero precisa encher a tela. Com min-height:0 ele ficava com a altura do
+     conteúdo (811px), e qualquer aparelho mais alto que isso mostrava uma
+     faixa clara embaixo — 147px num iPhone 14 Pro Max.
+
+     A unidade svh é a altura da janela com a barra do navegador VISÍVEL:
+     garante o preenchimento no estado inicial sem o hero mudar de tamanho
+     quando a barra se recolhe, que é o efeito colateral do dvh. A linha com
+     vh vem antes como reserva para navegador que não entende svh — ele
+     ignora a segunda declaração e fica com a primeira. */
+  .hero{min-height:100vh;min-height:100svh}
+
+  /* A linha de confiança quebra em 2 + 1 no celular, e à esquerda o terceiro
+     item ficava sozinho encostado na margem. Centralizado, a sobra se divide
+     nos dois lados e a quebra vira simetria em vez de órfã. No desktop os
+     três cabem numa linha e continuam alinhados à esquerda, com o resto. */
+  .confia{justify-content:center;text-align:center}
+
+  .topo{padding:14px 0}
+  .topo-in{flex-wrap:nowrap;gap:12px}
+  .menu-bt{display:inline-flex}
+
+  .topo-painel{
+    display:block;position:absolute;left:0;right:0;top:100%;z-index:6;
+    background:var(--painel);border-top:1px solid var(--filete);
+    box-shadow:0 22px 40px rgba(0,0,0,.45);
+    overflow:hidden;max-height:0;
+    /* `visibility:hidden` tira os links da ordem de tabulação e da leitura de
+       tela quando a gaveta está fechada. Só `max-height:0` não bastava: o
+       conteúdo ficava invisível mas ainda recebia Tab, e quem navega por
+       teclado caía dentro de um menu que não está na tela. A transição da
+       visibilidade espera a da altura terminar ao fechar, e acontece na hora
+       ao abrir — por isso os dois tempos diferentes. */
+    visibility:hidden;
+    transition:max-height .3s ease,visibility 0s linear .3s;
+  }
+  .topo-painel.aberto{
+    max-height:360px;visibility:visible;
+    transition:max-height .3s ease,visibility 0s linear 0s;
+  }
+  .topo-painel{padding:10px 20px 18px}
+
+  /* As seções, centralizadas — era o que faltava. */
+  .menu{flex-direction:column;align-items:stretch;width:auto;margin:10px 0 0;gap:0}
+  .menu a{justify-content:center;min-height:54px;font-size:1.05rem;padding:0;opacity:1}
+  .menu a::after{display:none}
+  .menu a[aria-current="page"]{background:rgba(0,191,255,.08);border-radius:8px}
+
+  /* O botão do topo NÃO entra na gaveta (decisão de 24/09/2026): ela fica só
+     com as seções. No celular quem cobre a ação de WhatsApp é o botão
+     flutuante, que acompanha a rolagem. A regra que o esconde abaixo de
+     900px continua valendo e não precisa de exceção aqui. */
+  /* Legibilidade no celular: estes dois eram os únicos abaixo de 13px que a
+     pessoa PRECISA ler para operar o simulador — o cabeçalho da tabela de
+     prazos e os limites do slider. Os outros textos pequenos da página são
+     miudinhos de aviso, e ficam como estão. */
+  .prazos-tabela th{font-size:.82rem}
+  .faixa-limites{font-size:.8rem}
+  /* A segunda linha da marca subia 10px; 11px ainda é logotipo, não texto. */
+  .marca-l2{font-size:.68rem}
 }
 @media (max-width:480px){
   body{font-size:16px}
@@ -929,7 +1228,7 @@ footer .links a,footer .links button{color:var(--claro);text-decoration:underlin
   .cluster{padding:16px 16px 18px}
   .pilula{padding:0 10px}
   .topo-link{padding:10px 12px;font-size:.9rem}
-  .fim{padding:80px 0}
+  .fim{padding:80px 0 56px}
   .zap{right:14px}
 }
 /* ─────────────────────────────────────────────────────────────
@@ -960,8 +1259,18 @@ body[data-produto] .produto-corpo .btn-linha,
 body[data-produto] .produto-corpo .link-saiba{align-self:center}
 
 /* Simulador — a coluna de texto. A tabela de prazos mantém as
-   colunas como estão: cifra fora do seu lado não se compara. */
-body[data-produto] .simular-pontos li{flex-direction:column;align-items:center;gap:10px}
+   colunas como estão: cifra fora do seu lado não se compara.
+
+   Os pontos do simulador também ficam FORA da centralização, pela mesma
+   razão que a tabela e o .cluster: são conteúdo para varrer com o olho, não
+   título de display. Centralizados eles viravam três pilhas — ícone em cima,
+   título, descrição — soltas no meio de uma coluna de 644px, sem espinha e
+   sem agrupamento. Em linha, o ícone ancora cada item à esquerda, o olho
+   desce por uma margem só e a lista acompanha o alinhamento da tabela logo
+   acima. Testado contra três colunas lado a lado (quebrava os títulos em
+   duas linhas desalinhadas) e contra manter centralizado com mais respiro
+   (continuava fita solta, só que mais alta). */
+body[data-produto] .simular-pontos li{text-align:left}
 
 /* Como funciona — o número vai para o meio da coluna e o trilho
    (com o carro) passa a correr de centro a centro: a distância

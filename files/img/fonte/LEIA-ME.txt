@@ -1,0 +1,29 @@
+ORIGINAIS DAS FOTOS DO HERO
+===========================
+
+O que é esta pasta
+------------------
+Aqui ficam os arquivos GRANDES, do jeito que vieram da câmera ou do banco de
+imagens. Eles não vão para o site: quem vai é o que o script gera a partir
+deles, em img/.
+
+    node ferramentas/imagens.mjs
+
+O script lê tudo que estiver aqui e escreve os tamanhos em img/, em WebP.
+Ele nunca amplia — se o original for pequeno, os tamanhos grandes não são
+gerados e o relatório avisa.
+
+
+Estado em 23/09/2026
+--------------------
+    hero.jpg                  3200x2133  OK
+    hero-financiamento.jpg    3200x2133  OK
+    hero-refinanciamento.jpg  1024x683   PEQUENA — ainda borra em retina
+
+As duas primeiras foram trocadas em 23/09/2026 por fotos do Pexels em
+resolução alta. A do refinanciamento é a única que sobrou pequena: continua
+sendo uma cópia do que está publicado, não um original de verdade. Baixar o
+original CC0 em resolução cheia no rawpixel e rodar o script resolve — o
+passo a passo está em img/CREDITOS.txt.
+
+Resolução alvo: 3200px de largura (2800px é o mínimo).

@@ -349,7 +349,9 @@ function simulador(painel) {
     const parcela = parcelaPrice(sim.financiado, cfg.taxaMes, sim.prazo);
     sim.parcela = Math.round(parcela * 100) / 100;
     elParcela.textContent = moeda.format(parcela);
-    elSub.textContent = `taxa ${taxaTexto}% a.m. · total ${moeda.format(parcela * sim.prazo)} · ${sim.prazo}x`;
+    /* Só a taxa: o total e o prazo já estão na linha acesa da tabela de prazos,
+       ao lado, nas duas páginas que têm este instrumento. */
+    elSub.textContent = `taxa ${taxaTexto}% a.m.`;
     elOut.textContent = moedaInteira.format(sim.valor);
     faixa.setAttribute("aria-valuetext", valorExtenso(sim.valor));
     faixa.style.setProperty("--pct", `${((sim.valor - fx.min) / (fx.max - fx.min)) * 100}%`);
@@ -636,7 +638,7 @@ function buscaFipe(painel) {
     etapa = "marca"; marca = null; modelo = null;
     campo.value = "";
     achado.hidden = true;
-    dica.textContent = "Comece pela marca.";
+    dica.textContent = "";   /* o placeholder do campo já diz isso */
     fecharLista();
     campo.focus();
   }
@@ -890,6 +892,57 @@ function acenderHero() {
     if (luz) luz.classList.add("on");
     if (txt) txt.classList.add("on");
   });
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MENU EM GAVETA (só no celular)
+   O botão de três barras abre o painel com as seções e o botão
+   de WhatsApp. Em tela grande o CSS deixa o painel em
+   `display:contents` e este código nunca chega a abrir nada —
+   o botão está escondido e ninguém clica nele.
+   Fecha em tudo que o visitante espera: escolher um link, tecla
+   Esc, tocar fora do cabeçalho, e ao passar para tela grande
+   (senão a gaveta ficaria "aberta" com o menu já na horizontal).
+   ───────────────────────────────────────────────────────────── */
+function menuGaveta() {
+  const bt = document.querySelector(".menu-bt");
+  const painel = document.getElementById("menuPrincipal");
+  if (!bt || !painel) return null;
+
+  const estaAberto = () => painel.classList.contains("aberto");
+  function fechar() {
+    painel.classList.remove("aberto");
+    bt.setAttribute("aria-expanded", "false");
+    bt.setAttribute("aria-label", "Abrir menu");
+  }
+  function abrir() {
+    painel.classList.add("aberto");
+    bt.setAttribute("aria-expanded", "true");
+    bt.setAttribute("aria-label", "Fechar menu");
+  }
+
+  bt.addEventListener("click", () => (estaAberto() ? fechar() : abrir()));
+
+  /* Escolheu um destino: a gaveta sai da frente. Vale para os links de
+     seção e para o botão de WhatsApp, que abre em outra aba. */
+  painel.addEventListener("click", (e) => { if (e.target.closest("a")) fechar(); });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && estaAberto()) { fechar(); bt.focus(); }
+  });
+
+  /* Tocar fora fecha. O clique no próprio botão é tratado acima, por isso
+     o cabeçalho inteiro fica de fora desta checagem. */
+  document.addEventListener("click", (e) => {
+    if (estaAberto() && !e.target.closest(".topo-in")) fechar();
+  });
+
+  /* Girou o aparelho ou passou para tablet: o menu volta a ser horizontal,
+     então a gaveta precisa deixar de estar "aberta". */
+  const largo = window.matchMedia("(min-width:601px)");
+  largo.addEventListener("change", (e) => { if (e.matches) fechar(); });
+
+  return { get aberto() { return estaAberto(); } };
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -1225,6 +1278,7 @@ document.addEventListener("DOMContentLoaded", () => {
   atualizarLinks();
   leads();
   acenderHero();
+  const gaveta = menuGaveta();
   const reveladas = entradas();
   const instrumento = document.querySelector(".cluster");
   if (instrumento && "IntersectionObserver" in window) {
@@ -1252,6 +1306,7 @@ document.addEventListener("DOMContentLoaded", () => {
     get ponteiroParado() { return painel.parado; },
     get pistaAtiva() { return estrada ? estrada.ativo : false; },
     get consentido() { return rastreio.consentido; },
+    get menuAberto() { return gaveta ? gaveta.aberto : false; },
     get blocosAnimados() { return reveladas ? reveladas.marcados : 0; },
   };
 });

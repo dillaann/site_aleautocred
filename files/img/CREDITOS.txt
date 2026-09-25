@@ -1,29 +1,64 @@
 IMAGENS DESTE SITE
 ==================
 
-hero.jpg
-  Título:   SUV cinza-escuro em pátio de terra (foto enviada pelo cliente)
-  Licença:  CONFIRMAR COM O CLIENTE. A foto foi entregue por ele em
-            21/09/2026 e tem cara de material de imprensa de montadora.
-            Se não for material próprio ou licenciado, não pode ir ao ar.
-  Fonte:    arquivo do cliente
-  Uso:      fundo do hero da home (index.html). Original de 1000x665,
-            reescalado para 1600px com lanczos e leve nitidez — o original
-            é menor que a tela, então não fica tão nítido quanto as fotos
-            de acervo. Se o cliente tiver o arquivo em resolução maior,
-            vale substituir.
+hero.jpg  (trocada em 23/09/2026)
+  Título:   Silhueta de carro em estrada de terra ao pôr do sol
+  Licença:  Pexels License — uso comercial livre, atribuição não exigida,
+            modificação permitida. Restrições: não revender cópia inalterada,
+            não usar como marca/nome de negócio, não sugerir que pessoas ou
+            marcas retratadas endossam o serviço, não retratar pessoas
+            identificáveis de forma ofensiva. Nada disso é violado aqui.
+  Fonte:    Pexels, foto 20272816 — https://www.pexels.com/photo/20272816/
+  Original: img/fonte/hero.jpg, 3200x2133
+  Uso:      fundo do hero da home (index.html)
+
+  Por que esta: sem emblema de marca e sem placa legível, horizontal, com o
+  assunto à direita (o texto do hero ocupa a esquerda) e escura o bastante
+  para o véu não ter de esmagá-la. Substituiu a foto do cliente, que tinha
+  1000x665 de detalhe real ampliados para 1600 e borrava em qualquer tela
+  retina — e cuja licença nunca foi confirmada.
+
+  A ANTERIOR (SUV cinza em pátio de terra) NÃO FOI APAGADA DO HISTÓRICO À TOA:
+  ela era material com cara de imprensa de montadora, entregue pelo cliente em
+  21/09/2026 sem comprovação de origem, com a placa "TAN EV" e o emblema da
+  grade legíveis no desktop. Se alguém quiser trazê-la de volta, confirme a
+  licença com o cliente antes.
+
+hero-financiamento.jpg  (trocada em 23/09/2026)
+  Título:   Vendedor entregando a chave a uma mulher sentada ao volante
+  Licença:  Pexels License — mesmas condições e restrições da hero.jpg acima.
+            Atenção à regra de endosso: a foto ilustra a situação de compra,
+            e o site não afirma nem sugere que a pessoa retratada é cliente,
+            funcionária ou que recomenda a Ale Auto Cred. Se algum dia entrar
+            legenda, depoimento ou nome junto dessa imagem, a regra passa a
+            ser violada — nesse caso, troque por foto de pessoa real, com
+            autorização de uso de imagem.
+  Fonte:    Pexels, foto 7144174 — https://www.pexels.com/photo/7144174/
+  Original: img/fonte/hero-financiamento.jpg, 3200x2133
+  Uso:      fundo do hero de financiamento.html
+
+  Por que esta: rosto humano, sem marca de veículo nem de loja visível, e lê
+  na hora como "acabei de comprar" — que é o assunto da página. O HANDOFF.md
+  registra que o público teme golpe e que rosto derruba mais objeção do que
+  headline. Substituiu um close de farol de 1024px que borrava em retina.
+
+  O recorte do celular desta foto está fixado em "centro" no
+  ferramentas/imagens.mjs: a escolha automática mirava nas mãos e cortava
+  fora o rosto, que é justamente o assunto.
 
 hero-refinanciamento.jpg
   Título:   "Free man driving car image"
   Licença:  CC0 1.0 (domínio público) — uso comercial livre, sem exigência de crédito
   Fonte:    rawpixel, via Openverse (openverse.org)
   Uso:      fundo do hero de refinanciamento.html — o carro continua com o dono
-
-hero-financiamento.jpg
-  Título:   "Car headlight close photo"
-  Licença:  CC0 1.0 (domínio público) — uso comercial livre, sem exigência de crédito
-  Fonte:    rawpixel, via Openverse (openverse.org)
-  Uso:      fundo do hero de financiamento.html — carro à venda, pátio de loja
+  >>> PENDÊNCIA: 1024x683 apenas — ampliação de 2,8x no notebook retina e
+      3,3x no celular, ou seja, borra. É a última foto pequena do site: a
+      home e o financiamento foram resolvidos em 23/09/2026 e só esta ficou.
+      É a mais fácil das três, porque não depende do cliente: a foto é CC0 e
+      o rawpixel publica o original em resolução bem maior. Baixe de lá,
+      salve em img/fonte/hero-refinanciamento.jpg e rode
+      `node ferramentas/imagens.mjs` — o resto é automático, e o srcset de
+      refinanciamento.html ganha os tamanhos novos (confira o relatório).
 
 hero.svg
   Arte vetorial criada para este site. Serve de reserva caso hero.jpg seja removido.
@@ -50,12 +85,34 @@ JPEG ajustando o src no index.html). As fotos aparecem nas cores originais.
 
 COMO TROCAR A FOTO DO HERO
 --------------------------
-Cada página tem a sua: a home usa img/hero.jpg, refinanciamento.html usa
-img/hero-refinanciamento.jpg e financiamento.html usa img/hero-financiamento.jpg
-(quem faz a troca é o data-produto do <body>, no estilo.css, logo abaixo de
-.hero-foto). Salve a nova imagem por cima do arquivo da página, em formato
-horizontal e com o assunto do lado direito — o texto fica à esquerda. Nada mais
-precisa ser alterado.
+Mudou em 22/09/2026. Antes a foto era background de CSS e bastava salvar por
+cima do arquivo. Agora cada página traz a sua num <picture> com srcset, e os
+tamanhos são gerados por script — porque uma foto só não serve para todas as
+telas (ver o bloco da hero.jpg lá em cima).
+
+  1. Coloque o ORIGINAL em resolução alta em img/fonte/, com o nome da página:
+       img/fonte/hero.jpg                   -> home
+       img/fonte/hero-refinanciamento.jpg   -> refinanciamento.html
+       img/fonte/hero-financiamento.jpg     -> financiamento.html
+     Horizontal, assunto do lado direito (o texto do hero fica à esquerda).
+
+  2. Na pasta do projeto:
+       npm install sharp
+       node ferramentas/imagens.mjs
+
+  3. Leia o relatório. Ele diz, tamanho por tamanho, o que gerou e o que
+     pulou por falta de resolução, e imprime os srcset prontos.
+
+  4. Se apareceram tamanhos NOVOS (porque o original é maior que o anterior),
+     acrescente-os ao srcset da página. O script imprime a linha pronta.
+
+  5. Se o relatório passou a gerar o recorte "em pé", descomente o <source
+     media="(max-width:900px)"> no HTML da página — é o que evita o celular
+     baixar a foto larga inteira só para preencher a tela alta.
+
+O `sharp` é ferramenta de bancada, não dependência do site: o site continua
+HTML/CSS/JS puro, sem build. Ele só é instalado na hora de gerar imagem, e
+não precisa ir para o servidor.
 
 O hero não tem mais tratamento azul: o véu é cinza neutro, o brilho azul
 (.luz) está desligado e o canvas de faróis (#pista) não é mais criado pelo

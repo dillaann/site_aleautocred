@@ -3,11 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Refinanciamento e financiamento de veículo em Palhoça | Ale Auto Cred</title>
+<title>Ale Auto Cred - Início</title>
 <meta name="description" content="Refinanciamento e financiamento de veículo em Palhoça e toda a Grande Florianópolis. Use seu carro quitado para receber dinheiro na conta. Sem cobrança antecipada. Correspondente bancário desde 2012.">
 <meta name="theme-color" content="#0C1018">
 <link rel="canonical" href="https://www.aleautocred.com.br/">
-<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="img/logo.svg" type="image/svg+xml">
+<!-- Não há preload da foto do hero: ela virou <picture> no corpo da página,
+     com fetchpriority="high". O varredor de pré-carga do navegador acha a
+     tag nos primeiros bytes do HTML, e um preload à parte só arriscaria
+     baixar um tamanho diferente do que o srcset viesse a escolher. -->
 
 <meta property="og:type" content="website">
 <meta property="og:locale" content="pt_BR">
@@ -18,7 +22,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..700&family=Inter+Tight:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="estilo.css?v=20260922c">
+<link rel="stylesheet" href="estilo.css?v=20260924v">
 </head>
 <body>
 
@@ -26,7 +30,25 @@
 
 <!-- ═══════════════ HERO ═══════════════ -->
 <section class="hero" id="topo">
-  <div class="hero-foto" aria-hidden="true"></div>
+  <!-- A foto do hero é <picture>, não background de CSS: só assim o navegador
+       escolhe o tamanho pela tela (srcset) e acha a imagem já nos primeiros
+       bytes do HTML, sem esperar a folha de estilo. Os arquivos saem de
+       `node ferramentas/imagens.mjs` — não edite a lista à mão.
+       O primeiro <source> é o recorte em pé, só no celular: a caixa do hero
+       lá é estreita e alta, e cobri-la com a foto deitada obrigaria o
+       navegador a ampliar a imagem a mais de 3x a largura da tela só para
+       preencher a altura. O `130vw` não é chute — é a largura que o recorte
+       3:5 ocupa depois do corte, e sem ele o navegador pediria um arquivo
+       menor do que vai desenhar. -->
+  <picture class="hero-foto">
+    <source media="(max-width:900px)" type="image/webp"
+            srcset="img/hero-pe-600.webp?v=20260924 600w, img/hero-pe-900.webp?v=20260924 900w, img/hero-pe-1200.webp?v=20260924 1200w, img/hero-pe-1280.webp?v=20260924 1280w"
+            sizes="130vw">
+    <source type="image/webp"
+            srcset="img/hero-800.webp?v=20260924 800w, img/hero-1200.webp?v=20260924 1200w, img/hero-1600.webp?v=20260924 1600w, img/hero-2400.webp?v=20260924 2400w, img/hero-3200.webp?v=20260924 3200w"
+            sizes="100vw">
+    <img src="img/hero.jpg?v=20260924" alt="" width="1600" height="1067" fetchpriority="high" decoding="async">
+  </picture>
   <div class="hero-tinta" aria-hidden="true"></div>
   <canvas id="pista" aria-hidden="true"></canvas>
   <div class="veu" aria-hidden="true"></div>
@@ -35,13 +57,24 @@
 
   <header class="topo">
     <div class="wrap topo-in">
-      <a class="marca" href="index.html">ALE AUTO CRED</a>
-      <nav class="menu" aria-label="Principal">
+      <a class="marca" href="index.html" aria-label="Ale Auto Cred">
+        <img class="marca-simbolo" src="img/logo.svg" alt="" width="42" height="42">
+        <span class="marca-nome" aria-hidden="true">
+          <span class="marca-l1">Ale</span>
+          <span class="marca-l2">Auto Cred</span>
+        </span>
+      </a>
+      <button class="menu-bt" type="button" aria-expanded="false" aria-controls="menuPrincipal" aria-label="Abrir menu">
+        <span class="menu-bt-barras" aria-hidden="true"></span>
+      </button>
+      <div class="topo-painel" id="menuPrincipal">
+        <nav class="menu" aria-label="Principal">
         <a href="index.html" aria-current="page">Início</a>
         <a href="refinanciamento.html">Refinanciamento</a>
         <a href="financiamento.html">Financiamento</a>
       </nav>
-      <a class="topo-link" data-zap data-origem="header" href="#" target="_blank" rel="noopener">Falar no WhatsApp</a>
+      <a class="topo-link" data-zap data-origem="header" href="#" target="_blank" rel="noopener">Fazer uma simulação</a>
+      </div>
     </div>
   </header>
 
@@ -367,6 +400,6 @@
 }
 </script>
 
-<script src="app.js?v=20260916c" defer></script>
+<script src="app.js?v=20260924a" defer></script>
 </body>
 </html>
